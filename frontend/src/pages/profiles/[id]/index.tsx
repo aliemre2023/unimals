@@ -30,6 +30,12 @@ const ProfileId: React.FC = () => {
     }, []);
 
     useEffect(() => {
+        if(storedUserId === id){
+            router.push("/profile");
+        }
+    }, [id, storedUserId]);
+
+    useEffect(() => {
         if (userInfo.length > 0 && storedUserId) {
             if (userInfo[0].followers.includes(parseInt(storedUserId))) {
                 console.log("INN");
