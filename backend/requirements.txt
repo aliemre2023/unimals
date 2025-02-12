@@ -1,0 +1,4 @@
+Flask==3.1.0
+Flask_Cors==5.0.0
+psycopg2==2.9.9
+psycopg2_binary==2.9.9
