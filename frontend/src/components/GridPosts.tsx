@@ -47,7 +47,7 @@ const GridPosts: React.FC<GridPostProps> = ({user_id, edit, travelling}) => {
     };
 
     return (
-        <div className='grid-container'
+        <div className='grid-container bottom-fixer'
         >
             {userPosts.length == 0 && !travelling && (
                 <div className='grid-item flex align-items-center justify-content-center bg-blue-100 p-8'>
