@@ -181,7 +181,7 @@ def get_latest_posts():
 
     latest_post = []
     for row in rows:
-        latest_post.append({
+        a_post = {
             'id': row[0],
             'user_id': row[1],
             'user_name': row[2],
@@ -191,8 +191,37 @@ def get_latest_posts():
             'postedDate': row[6],
             'likeCount': row[7],
             'dislikeCount': row[8],
-            'commentCount': row[9]
-        })
+            'commentCount': row[9],
+            'postsAnimal': []
+        }
+
+        conn = create_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+        SELECT
+            post_animals.animal_id,
+            animals.name,
+            animals.profile_photo
+        FROM post_animals
+        LEFT JOIN animals ON animals.id = post_animals.animal_id
+        WHERE post_id = %s;
+        """, (row[0], ))
+
+        post_animals = cursor.fetchall()
+        cursor.close()
+        conn.close()
+
+        for animal in post_animals:
+            animals_info = {
+                'id': animal[0],
+                'name': animal[1],
+                'profile_photo': animal[2]
+            }
+            a_post['postsAnimal'].append(animals_info) 
+
+
+        latest_post.append(a_post)
 
     return jsonify(latest_post)
 

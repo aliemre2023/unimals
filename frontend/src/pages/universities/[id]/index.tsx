@@ -191,7 +191,7 @@ const UniversityInfo = () => {
                     </div>
                     <div className="animal-list">
                         {animals.length > 0 ? (
-                            <div className="grid-view_unipost pr-6 pl-3">
+                            <div className="grid-view_show pr-6 pl-3">
                                 {animals.map((animal) => gridCardTemplateAnimal(animal))}
                             </div>
                         ) : (

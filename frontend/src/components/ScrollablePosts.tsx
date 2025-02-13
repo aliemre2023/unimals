@@ -4,6 +4,7 @@ import ProfilePhoto from './ProfilePhoto';
 import PostVisualize from "../components/PostVisualize";
 import useAuth from './UseAuth';
 import { useRouter } from 'next/router';
+import { Sidebar } from "primereact/sidebar";
 
 interface UserReaction {
     post_id: number | string;
@@ -21,18 +22,23 @@ const ScrollablePostsList: React.FC<ScrollablePostsListProps> = ({width}) => {
     const [idPostVisible, setIdPostVisible] = useState<number | string>();
     const router = useRouter();
     const [userReactions, setUserReactions] = useState<UserReaction[]>([]);
+    const [postAnimalsSidebar, setPostAnimalsSidebar] = useState<{ [key: number]: boolean }>({});
 
     useEffect(() => {
         fetch(`http://127.0.0.1:5000/api/post/latest`)
             .then((response) => {
                 const data = response.json();
-                console.log(data);
+                console.log("DATA latest post:", data);
                 return data;
             })
             .then((data) => {
                 setLatestPosts(data);
             })
         handleUserReactions();
+    }, []);
+
+    useEffect(() => {
+        console.log(latestPosts);
     }, []);
 
     const handleUserReactions = async () => {
@@ -108,7 +114,7 @@ const ScrollablePostsList: React.FC<ScrollablePostsListProps> = ({width}) => {
             console.log("postid: ", postId);
             console.log("userid: ", storedUserId);
 
-            const response = await fetch(`http://127.0.0.1:5000/api/posts/${postId}/dislike`, {
+            const response = await fetch(`https://unimals-backend.vercel.app/api/posts/${postId}/dislike`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -155,18 +161,33 @@ const ScrollablePostsList: React.FC<ScrollablePostsListProps> = ({width}) => {
         return reaction ? reaction.is_like : null;
     };
 
+    const handleSidebarToggle = (postId: number) => {
+        setPostAnimalsSidebar(prevState => ({
+            ...prevState,
+            [postId]: !prevState[postId]
+        }));
+    };
+
+
     return (
         <div className={`${width} bg-gray-400 scrollable justify-content-center`}>
             {
                 <ul className='m-4'>
                     {latestPosts.map((post) => (
                         <li key={post.id}
-                            className='border-solid border-2 border-primary-500 surface-overlay p-6 m-3 pb-1 pt-1 border-round-md'>
+                            className='border-solid border-2 border-primary-500 surface-overlay p-6 m-3 pb-1 pt-1 border-round-md relative'  
+                        >                      
+                            <div className='absolute top-0 right-0'>
+                                <Button 
+                                    icon="pi pi-info"
+                                    style={{ borderRadius: '0 2px 0 50px' }}
+                                    onClick={() => handleSidebarToggle(post.id as number)}
+                                />
+                            </div>
                             <div className='w-12 xl:flex lg:flex md:flex sm:flex align-items-center'>
                                 <ProfilePhoto img={post.user_profilePhoto} height='50' thick_border={false} type={"profiles"} id={post.user_id}/>
                                 <div className='p-2'>
                                     <div className='left-align text-xl font-bold'>{post.user_name}</div>
-                                    
                                 </div>
                             </div>
                             <div className='left-align p-1'>
@@ -201,6 +222,32 @@ const ScrollablePostsList: React.FC<ScrollablePostsListProps> = ({width}) => {
                                     {post.dislikeCount}
                                 </div>  
                             </div>
+
+                            {
+                                postAnimalsSidebar[post.id as number] ?
+                                <div className='w-12 absolute bottom-0 left-0'>
+                                    <div className='w-6 bg-blue-200 border-round-lg m-1 p-1'>
+                                        {post.postsAnimal.map((animal) => (
+                                            <div 
+                                                key={animal.id as number} 
+                                                className='flex align-items-center p-1 m-1 bg-blue-100 border-round-md cursor-pointer'
+                                                onClick={() => {
+                                                    router.push(`/animals/${animal.id}`)
+                                                }}
+                                            >
+                                                <ProfilePhoto img={animal.profile_photo as string} height='30' thick_border={false} type={"animals"} id={animal.id as string}/>
+                                                <div className='ml-2'>{animal.name as string}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div> 
+                                :
+                                <div
+                                    className='w-12 absolute right-0 justify-content-center align-items-center'
+                                >
+                                    
+                                </div> 
+                            }
                         </li>
                     ))}
                     <li className='bottom-fixer'>

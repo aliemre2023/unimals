@@ -9,5 +9,5 @@ interface Post {
     likeCount: number;
     dislikeCount: number;
     commentCount: number;
-    postsAnimal: number[];
+    postsAnimal: Animal[];
 }
