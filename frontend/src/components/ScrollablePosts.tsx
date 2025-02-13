@@ -114,7 +114,7 @@ const ScrollablePostsList: React.FC<ScrollablePostsListProps> = ({width}) => {
             console.log("postid: ", postId);
             console.log("userid: ", storedUserId);
 
-            const response = await fetch(`https://unimals-backend.vercel.app/api/posts/${postId}/dislike`, {
+            const response = await fetch(`http://127.0.0.1:5000/api/posts/${postId}/dislike`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
