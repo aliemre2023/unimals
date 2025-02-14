@@ -1,7 +1,7 @@
 from app.utils.db_utils import *
 from flask import jsonify
 
-def get_animals(searchName = None, animalId = None, universityId = None):
+def get_animals(searchName = None, animalId = None, universityId = None, goodyAlgorithm = None):
     conn = create_connection()
     cursor = conn.cursor()
 
@@ -43,14 +43,20 @@ def get_animals(searchName = None, animalId = None, universityId = None):
     parameters = []
 
     if(searchName): 
-        query += "AND (a.name LIKE %s)"
+        query += " AND (a.name LIKE %s)"
         parameters.append('%' + searchName + '%')
     if(animalId): 
-        query += "AND (a.id = %s)"
+        query += " AND (a.id = %s)"
         parameters.append(animalId)
     if(universityId): 
-        query += "AND (universities.id = %s)"
+        query += " AND (universities.id = %s)"
         parameters.append(universityId)
+    if(goodyAlgorithm):
+        query += """ AND (
+            (SELECT COUNT(*) FROM animal_likes WHERE animal_likes.animal_id = a.id AND animal_likes.is_like = true) = 0 AND 
+            (SELECT COUNT(*) FROM animal_likes WHERE animal_likes.animal_id = a.id AND animal_likes.is_like = false) = 0
+        ) IS NOT TRUE
+        """
 
     query += """
     ORDER BY goody_score DESC;

@@ -11,7 +11,8 @@ def api_animals():
     animalName = request.args.get('name', '')
     animalId = request.args.get('id', '')
     universityId = request.args.get('university_id', '')
-    animals = get_animals(animalName, animalId, universityId)
+    goodyAlgorithm = request.args.get('is_goody', '')
+    animals = get_animals(animalName, animalId, universityId, goodyAlgorithm)
     return animals
 
 @api_bp.route('/profiles', methods=['GET'])
