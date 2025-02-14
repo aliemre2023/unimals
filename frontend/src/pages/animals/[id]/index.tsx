@@ -192,13 +192,15 @@ const AnimalInfo = () => {
                                 <div className='mb-1'>{post.description}</div>  
                             </div>
                                     
-                            <img
-                                src={post.image || "/default_post.jpg"}
-                                className="w-full h-32 object-cover"
-                                onError={(e) => {
-                                    e.currentTarget.src = "/default_post.jpg";
-                                }}
-                            />
+                            <div key={post.id} className=' flex align-items-center justify-content-center'>  
+                                <img
+                                    src={post.image || "/default_post.jpg"}
+                                    className="w-full h-32 object-cover"
+                                    onError={(e) => {
+                                        e.currentTarget.src = "/default_post.jpg";
+                                    }}
+                                />
+                            </div>
                         </div>
                     ))}
 
