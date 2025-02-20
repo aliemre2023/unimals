@@ -38,8 +38,6 @@ const UniversityInfo = () => {
         fetch(`http://127.0.0.1:5000/api/animals?university_id=${id}&name=${searchTextAnimal}`)
             .then((response) => response.json())
             .then((data) => {
-                console.log("ID: ", id);
-                console.log(data);
                 setAnimals(data);
             });
         
@@ -68,7 +66,6 @@ const UniversityInfo = () => {
         fetch(`http://127.0.0.1:5000/api/profiles?university_id=${id}&name=${searchTextUser}`)
             .then((response) => response.json())
             .then((data) => {
-                console.log(data);
                 setUsers(data);
             });
         
@@ -129,18 +126,12 @@ const UniversityInfo = () => {
         fetch(`http://127.0.0.1:5000/api/universities?id=${id}`)
             .then((response) => response.json())
             .then((data) => {
-                console.log("universiy data: " ,data);
                 setUniversity(data);
-                console.log("universiy data my: " ,university);
                 if (Array.isArray(data) && data.length > 0) {
                     setUniversity(data[0]);
                 }
             });
     }, [id]);
-
-    useEffect(() => {
-        console.log("university data my: ", university);
-    }, [university]);
 
     if (!university) {
         return <div>Loading...</div>;
@@ -166,7 +157,7 @@ const UniversityInfo = () => {
                     </div>
                     <div className="animal-list">
                         {users.length > 0 ? (
-                            <div className="grid-view_unipost pl-6 pr-3">
+                            <div className="grid-view_show p-2">
                                 {users.map((users) => gridCardTemplateUser(users))}
                             </div>
                         ) : (
@@ -191,7 +182,7 @@ const UniversityInfo = () => {
                     </div>
                     <div className="animal-list">
                         {animals.length > 0 ? (
-                            <div className="grid-view_show pr-6 pl-3">
+                            <div className="grid-view_show p-2">
                                 {animals.map((animal) => gridCardTemplateAnimal(animal))}
                             </div>
                         ) : (

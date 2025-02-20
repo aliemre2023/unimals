@@ -6,13 +6,14 @@ import GridPosts from '../../../components/GridPosts';
 import { useRouter } from 'next/router';
 import { Button } from 'primereact/button';
 import { integer } from 'aws-sdk/clients/cloudfront';
+import useDecode from '../../../hooks/useDecode';
 
 const AnimalInfo = () => {
     const router = useRouter();
     const { id } = router.query;
     const [animalInfo, setAnimalInfo] = useState<Animal[]>([]);
     const [userReactions, setUserReactions] = useState<UserReaction[]>([]);
-
+    const {storedUserId, isLoading} = useDecode();
 
     useEffect(() => {
         fetch(`http://127.0.0.1:5000/api/animals?id=${id}`)
@@ -20,15 +21,12 @@ const AnimalInfo = () => {
 
             .then((data) => {
                 setAnimalInfo(data);
-                console.log(data);
             });
         
-        handleUserReactions();
-    }, [id]);
+        handleUserReactions(storedUserId as string);
+    }, [id, storedUserId]);
 
-    const handleUserReactions = async () => {
-        const storedUserId = localStorage.getItem('userId');
-        console.log(storedUserId);
+    const handleUserReactions = async (storedUserId: string) => {
         if (!storedUserId) {
             return;
         }
@@ -44,11 +42,9 @@ const AnimalInfo = () => {
 
         const data = await response.json();
         setUserReactions(data);
-        console.log(userReactions);
     }
 
-    const handleLike = async (animalId: number) => {
-        const storedUserId = localStorage.getItem('userId');
+    const handleLike = async (animalId: number, storedUserId: string) => {
         if (!storedUserId) {
             router.push('/profile');
             return;
@@ -77,14 +73,13 @@ const AnimalInfo = () => {
                         } : a
                 )
             );
-            handleUserReactions();           
+            handleUserReactions(storedUserId as string);           
         } catch (error) {
             console.error('Error liking the animal:', error);
         }
     };
 
-    const handleDislike = async (animalId: number) => {
-        const storedUserId = localStorage.getItem('userId');
+    const handleDislike = async (animalId: number, storedUserId: string) => {
         if (!storedUserId) {
             router.push('/profile');
             return;
@@ -111,7 +106,7 @@ const AnimalInfo = () => {
                         } : a
                 )
             );
-            handleUserReactions();
+            handleUserReactions(storedUserId as string);
         } catch (error) {
             console.error('Error disliking the animal:', error);
         }
@@ -121,9 +116,7 @@ const AnimalInfo = () => {
         return <div>NO ANIMAL ID EXIST</div>
     }
 
-
     const animal = animalInfo[0];
-    console.log("animal: ", animal);
 
     const getUserReaction = (postId: number | string) => {
         const reaction = userReactions.find(reaction => reaction.animal_id === postId);
@@ -162,12 +155,12 @@ const AnimalInfo = () => {
                                                 <Button 
                                                     icon={`pi ${getUserReaction(animal.id) === true ? 'pi-thumbs-up-fill' : 'pi-thumbs-up'}`}
                                                     className={`ml-3 like_dislike_comment_width p-button-success`}
-                                                    onClick={() => handleLike(animal.id as number)}
+                                                    onClick={() => handleLike(animal.id as number, storedUserId as string)}
                                                 />
                                                 <Button 
                                                     icon={`pi ${getUserReaction(animal.id) === false ? 'pi-thumbs-down-fill' : 'pi-thumbs-down'}`}
                                                     className={`ml-3 like_dislike_comment_width p-button-danger`}
-                                                    onClick={() => handleDislike(animal.id as number)}
+                                                    onClick={() => handleDislike(animal.id as number, storedUserId as string)}
                                                 />
                                             </div>
                                         </div>
@@ -191,7 +184,7 @@ const AnimalInfo = () => {
                                 </div>
                                 <div className='mb-1'>{post.description}</div>  
                             </div>
-                                    
+
                             <div key={post.id} className=' flex align-items-center justify-content-center'>  
                                 <img
                                     src={post.image || "/default_post.jpg"}

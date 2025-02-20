@@ -21,10 +21,10 @@ const ProfilePhoto: React.FC<ProfilePhotoProps> = ({img, height, thick_border, t
             <img
                 src={img || '/default_avatar.png'}
                 alt="Default Avatar"
-                className="h-full w-full cursor-pointer object-cover "
+                className="h-full w-full cursor-pointer object-cover"
                 onError={(e) => {
                     (e.currentTarget as HTMLImageElement).src = '/default_avatar.png';
-                }}
+               }}
                 onClick={() => {
                     if(type != "rooms"){
                         router.push(`/${type}/${id}`);

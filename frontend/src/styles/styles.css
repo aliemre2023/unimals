@@ -187,17 +187,6 @@ body, html, .overflow_hidden {
   margin: 1rem auto 0 auto;
 }
 
-.grid-view_unipost {
-  width: 100%;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 20px;
-  max-height: 73vh;
-  overflow-y: auto;
-  place-items: center;
-  margin: 1rem auto 0 auto;
-}
-
 
 .grid-card {
   width: 200px !important;

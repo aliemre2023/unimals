@@ -12,7 +12,9 @@ export class SocketServer {
                 path: '/api/socketio',
                 cors: {
                     origin: '*',
-                    methods: ['GET', 'POST']
+                    methods: ['GET', 'POST'],
+                    allowedHeaders: ['Content-Type'],
+                    credentials: true
                 }
             });
         }

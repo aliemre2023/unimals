@@ -9,7 +9,8 @@ import { InputTextarea } from 'primereact/inputtextarea';
 import AnimalsList from '../../../../components/AnimalList';
 import AnimalList from '../../../../components/AnimalList';
 import { useRouter } from 'next/router';
-import useAuth from '../../../../components/UseAuth';
+import useAuth from '../../../../hooks/useAuth';
+import useDecode from '../../../../hooks/useDecode';
 
 dotenv.config();
 
@@ -35,15 +36,8 @@ const PostAdd: React.FC = () => {
     const [tempText, setTempText] = useState<string>('');
     const searchDebounce = useRef<NodeJS.Timeout | null>(null);
     const [selectedAnimalIds, setSelectedAnimalIds] = useState<number[]>([]);
-    const [storedUserId, setStoredUserId] = useState<string | null>(null);
-
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const userId = localStorage.getItem('userId');
-            setStoredUserId(userId);
-        }
-    }, []);
-
+    const router = useRouter();
+    const {storedUserId, isLoading} = useDecode();
 
     const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(event.target.value);
@@ -71,23 +65,9 @@ const PostAdd: React.FC = () => {
         fetchAnimals(searchText);
     }, [searchText]);
 
-    /*
-    useEffect(() => {
-        fetch(`http://127.0.0.1:5000/api/animals?name=${searchText}`)
-            .then((response) => response.json())
-            .then((data) => {
-                console.log(data);
-                setAnimals(data);
-            });
-        
-    
-    }, [searchText]);
-    */
-
     const handleAnimalClick = (animalId: number) => {
         setSelectedAnimalIds((prevSelectedAnimalIds) => {
             if (prevSelectedAnimalIds.includes(animalId)) {
-                console.log(animalId);
                 return prevSelectedAnimalIds.filter((id) => id !== animalId);
             } 
             else {
@@ -160,7 +140,6 @@ const PostAdd: React.FC = () => {
     
         try {
             const command = new PutObjectCommand(params);
-            console.log(command);
             const s3Response = await s3Client.send(command);
             
             // public URL
@@ -197,7 +176,6 @@ const PostAdd: React.FC = () => {
 
         if (response.ok) {
             const data = await response.json();
-            console.log('Post added successfully:', data);
         } 
         else {
             console.error('Error adding post:', response.statusText);
@@ -216,6 +194,8 @@ const PostAdd: React.FC = () => {
         if (imageUrl) {
             await uploadToDB(imageUrl);
         }
+
+        router.push("/profile");
     }
 
     return (

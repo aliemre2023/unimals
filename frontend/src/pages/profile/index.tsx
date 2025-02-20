@@ -5,6 +5,9 @@ import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import GridPosts from '../../components/GridPosts';
 import { useRouter } from 'next/router';
+import Cookies from 'js-cookie'
+import { jwtDecode } from "jwt-decode";
+import useDecode from '../../hooks/useDecode';
 
 const Profile = () => {
     const [userInfo, setUserInfo] = useState<any[]>([]);
@@ -22,15 +25,13 @@ const Profile = () => {
     const [loggedOutMessage, setLoggedOutMessage] = useState('');
     const [editting, setEditting] = useState<boolean>(false);
 
+    const {storedUserId, isLoading} = useDecode();
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const storedUserId = localStorage.getItem('userId');
-            if (storedUserId) {
-                setUserId(storedUserId);
-                fetchUserInfo(storedUserId);
-            }
+        if(!isLoading && storedUserId){
+            setUserId(storedUserId as string);
+            fetchUserInfo(storedUserId);
         }
-    }, []);
+    }, [storedUserId, isLoading]);
 
     const fetchUserInfo = async (userId: string) => {
         try {
@@ -48,6 +49,7 @@ const Profile = () => {
 
     const handleLogin = async () => {
         const response = await fetch('http://127.0.0.1:5000/api/login', {
+            credentials: 'include',
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -62,15 +64,28 @@ const Profile = () => {
 
         if (response.ok) {
             const data = await response.json();
-            setUserId(data.user_id);
-            localStorage.setItem('userId', data.user_id); 
+           
+            const token = data.token;
+            if(token){
+                Cookies.set('session_token', token, {expires: 7, path: '/'});
 
-            setSuccessMessage('Login successful.');
-            setErrorMessage('');
+                const decodedToken: any = jwtDecode(token as any);
+                const storedUserId = decodedToken.user_id;
+                if (storedUserId) {
+                    setUserId(storedUserId);
+                    fetchUserInfo(storedUserId);
+                }
 
-            setTimeout(() => {
-                fetchUserInfo(data.user_id);
-            }, 1000);
+                setSuccessMessage('Login successful.');
+                setErrorMessage('');
+
+                setTimeout(() => {
+                    fetchUserInfo(storedUserId);
+                }, 1000);
+            }
+            else {
+                console.error('Token not found');
+            }
         } 
         else {
             const errorData = await response.json();
@@ -93,13 +108,8 @@ const Profile = () => {
         setErrorMessage("");
         setSuccessMessage("");
 
-        console.log('Response status:', response.status);
-        console.log('Response headers:', response.headers);
-        console.log('Response:', response);
-
         if (response.ok) {
             const data = await response.json();
-            console.log('Response data:', data);
             setSuccessMessage("Congratulations! Account created.");
         } 
         else {
@@ -110,7 +120,7 @@ const Profile = () => {
 
     const handleLogout = () => {
         if (typeof window !== 'undefined') {
-            localStorage.removeItem('userId'); // Remove userId from localStorage
+            Cookies.remove("session_token");
         }
         setUserId('');
         setUserInfo([]);
@@ -126,7 +136,7 @@ const Profile = () => {
             method: 'DELETE',
         });
         if (response.ok) {
-            console.log(`${user_id} ppp updated successfully`);
+            //console.log(`${user_id} ppp updated successfully`);
         } 
         else {
             console.error(`Failed to update user pp: ${new_pp}`);

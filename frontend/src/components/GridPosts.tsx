@@ -19,10 +19,8 @@ const GridPosts: React.FC<GridPostProps> = ({user_id, edit, travelling}) => {
     const fetchUserPosts = async (user_id: string) => {
         try {
             const response = await fetch(`http://127.0.0.1:5000/api/users/${user_id}/posts`);
-            console.log(response);
             if (response.ok) {
                 const data = await response.json();
-                console.log("Fetched User Posts:", data);
                 setUserPosts(data);
             } else {
                 console.error('Failed to fetch user posts');
@@ -38,7 +36,6 @@ const GridPosts: React.FC<GridPostProps> = ({user_id, edit, travelling}) => {
         });
         if (response.ok) {
             fetchUserPosts(user_id);
-            console.log(`Post ${post_id} deleted successfully`);
         } 
         else {
             console.error('Failed to delete post');

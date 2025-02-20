@@ -21,11 +21,9 @@ const PostVisualize: React.FC<PostVisualizeProps> = ({ post_id, visible: initial
     const router = useRouter();
 
     const fetchComments = async (post_id: string) => {
-        console.log(post_id);
         const response = await fetch(`http://127.0.0.1:5000/api/posts/${post_id}/comments`);
         const data = await response.json();
         setComments(data);
-        console.log(data);
     };
 
     const addNewComment = async () => {
@@ -37,12 +35,10 @@ const PostVisualize: React.FC<PostVisualizeProps> = ({ post_id, visible: initial
             return;
         }
 
-        console.log(storedUserId);
         const newCommentInfo = {
             user_id: storedUserId,
             comment: newComment,
         };
-        console.log(post_id);
         const response = await fetch(`http://127.0.0.1:5000/api/posts/${post_id}/comments/add`, {
             method: 'POST',
             headers: {
@@ -51,7 +47,6 @@ const PostVisualize: React.FC<PostVisualizeProps> = ({ post_id, visible: initial
             body: JSON.stringify(newCommentInfo)
         });
         const data = await response.json();
-        console.log(data);
         setNewComment('');
 
         fetchComments(post_id);

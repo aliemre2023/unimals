@@ -1,44 +1,42 @@
 import React, { useState, useRef, useEffect } from 'react';
 import FooterNav from '../../components/FooterNav';
 import ProfilePhoto from '../../components/ProfilePhoto';
-import useAuth from '../../components/UseAuth';
+import useAuth from '../../hooks/useAuth';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { Datetime } from 'aws-sdk/clients/costoptimizationhub';
 import { useRouter } from 'next/router';
 import { useSocket } from '../../hooks/useSocket';
+import useDecode from '../../hooks/useDecode';
 
 const RoomPage = () => {
     useAuth();
 
-    const [userId, setUserId] = useState('');
+    //const [userId, setUserId] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [publicRooms, setPublicRooms] = useState<Room[]>([]);
     const [secretRooms, setSecretRooms] = useState<Room[]>([]);
     const [activeButton, setActiveButton] = useState<string>('public');
     const [roomInfo, setRoomInfo] = useState<RoomInfo>({ messages: [], participants: [] });
-    const [activeRoomId, setActiveRoomId] = useState<string | null>(null);
+    const [activeRoom, setActiveRoom] = useState<Room>();
     const [newMessage, setNewMessage] = useState('');
     const router = useRouter();
+    const {storedUserId, isLoading} = useDecode();
+
+    const socket = useSocket('http://localhost:3000'); //  https://unimals.vercel.app
+    //const socket = useSocket('https://unimals.vercel.app');
 
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const storedUserId = localStorage.getItem('userId');
-            if (storedUserId) {
-                setUserId(storedUserId);
-            }
+        if (!socket){
+            console.log("Socket.io does not run");
+            return;
         }
-    }, []);
-
-    const socket = useSocket(process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'http://localhost:3000');
-
-    useEffect(() => {
-        if (!socket) return;
+        console.log("Socket.io runs");
 
         // Join room when activeRoomId changes
-        if (activeRoomId) {
-            socket.emit('joinRoom', activeRoomId);
+        if (activeRoom?.id) {
+            socket.emit('joinRoom', activeRoom?.id);
         }
 
         // Listen for new messages
@@ -50,12 +48,12 @@ const RoomPage = () => {
         });
 
         return () => {
-            if (activeRoomId) {
-                socket.emit('leaveRoom', activeRoomId);
+            if (activeRoom?.id) {
+                socket.emit('leaveRoom', activeRoom?.id);
             }
             socket.off('newMessage');
         };
-    }, [socket, activeRoomId]);
+    }, [socket, activeRoom?.id]);
 
 
 
@@ -74,8 +72,10 @@ const RoomPage = () => {
         setSearchTerm(event.target.value);
     };
 
-    const handleRoomClick = async (roomId: string) => {
-        setActiveRoomId(roomId);
+    const handleRoomClick = async (roomId: string, userId: string, room: Room) => {
+        setActiveRoom(room);
+        fetchPublicRooms();
+        fetchSecretRooms(userId);
         await fetchRoomInfo(roomId);
     };
 
@@ -118,16 +118,16 @@ const RoomPage = () => {
     };
 
     const handleSendMessage = async () => {
-        if (!newMessage.trim() || !activeRoomId) return;
+        if (!newMessage.trim() || !activeRoom?.id) return;
 
         try {
-            const response = await fetch(`http://127.0.0.1:5000/api/rooms/${activeRoomId}/message/send`, {
+            const response = await fetch(`http://127.0.0.1:5000/api/rooms/${activeRoom?.id}/message/send`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    user_id: userId,
+                    user_id: storedUserId,
                     message: newMessage,
                 }),
             });
@@ -137,9 +137,9 @@ const RoomPage = () => {
                 
                 // Emit the message through WebSocket
                 socket?.emit('sendMessage', {
-                    roomId: activeRoomId,
+                    roomId: activeRoom?.id,
                     message: {
-                        user_id: userId,
+                        user_id: storedUserId,
                         user_name: messageData.user_name,
                         message: newMessage,
                         date: new Date().toISOString(),
@@ -170,22 +170,30 @@ const RoomPage = () => {
 
     useEffect(() => {
         fetchPublicRooms();
-        if (userId) {    
-            fetchSecretRooms(userId);
+        if (storedUserId) {    
+            fetchSecretRooms(storedUserId);
         }
-    }, [userId, searchTerm]);  
+    }, [storedUserId, searchTerm]);  
 
     return (
         <div className="w-full bg-blue-700">
-            <div className='w-4 flex text-4xl p-3  align-items-center justify-content-center'>
-                <span className="p-input-icon-left w-1/2">
-                    <InputText
-                        value={searchTerm}
-                        onChange={handleSearchChange}
-                        placeholder="Search a Room..."
-                        className="w-full"
-                    />
-                </span>
+            <div className='w-12 flex'>
+                <div className='w-4 flex text-4xl p-3  align-items-center justify-content-center'>
+                    <span className="p-input-icon-left">
+                        <InputText
+                            value={searchTerm}
+                            onChange={handleSearchChange}
+                            placeholder="Search a Room..."
+                            className="w-full"
+                        />
+                    </span>
+                </div>
+
+                <div className='w-8 flex text-4xl p-3  align-items-center justify-content-center'>
+                    <span className="p-input-icon-left">
+                        <h3>{activeRoom?.room_name}</h3>
+                    </span>
+                </div>
             </div>
 
             <div className='w-12 flex'>
@@ -214,8 +222,8 @@ const RoomPage = () => {
                         secretRooms.map((room, index) => (
                             <div 
                                 key={index} 
-                                className={`flex p-3 m-1 bg-gray-200 border-round-lg cursor-pointer ${activeRoomId === room.id ? 'bg-blue-200' : ''}`}
-                                onClick={() => handleRoomClick(room.id)}
+                                className={`flex p-3 m-1 border-round-lg cursor-pointer  ${activeRoom?.id === room.id ? 'bg-green-200' : 'bg-gray-200'}`}
+                                onClick={() => handleRoomClick(room.id, storedUserId as string, room)}
                             >
                                 <ProfilePhoto img={room.room_photo} height={"40"} thick_border={false} type={"rooms"} id={room.id}/>
                                 <p className='p-2'>{room.room_name}</p>
@@ -225,8 +233,8 @@ const RoomPage = () => {
                         publicRooms.map((room, index) => (
                             <div 
                                 key={index} 
-                                className={`flex p-3 m-1 bg-gray-200 border-round-lg cursor-pointer ${activeRoomId === room.id ? 'bg-blue-200' : ''}`}
-                                onClick={() => handleRoomClick(room.id)}
+                                className={`flex p-3 m-1 border-round-lg cursor-pointer ${activeRoom?.id === room.id ? 'bg-green-200' : 'bg-gray-200'}`}
+                                onClick={() => handleRoomClick(room.id, storedUserId as string, room)}
                             >
                                 <ProfilePhoto img={room.room_photo} height={"40"} thick_border={false} type={"rooms"} id={room.id}/>
                                 <p className='p-2'>{room.room_name}</p>
@@ -244,9 +252,9 @@ const RoomPage = () => {
                         }}
                     >
                         {roomInfo.messages.map((message, index) => (
-                            <div key={index} className={`flex ${message.user_id === userId ? 'justify-content-end' : 'justify-content-start'}`}>
-                                <div className={`w-8 p-3 m-2 ${message.user_id === userId ? 'bg-green-300' : 'bg-gray-300'} border-round-lg`}>
-                                    {message.user_id !== userId && (
+                            <div key={index} className={`flex ${message.user_id == storedUserId ? 'justify-content-end' : 'justify-content-start'}`}>
+                                <div className={`w-8 p-3 m-2 ${message.user_id == storedUserId ? 'bg-green-300' : 'bg-gray-300'} border-round-lg`}>
+                                    {message.user_id !== storedUserId && (
                                         <div 
                                             className="text-sm font-bold mb-1 cursor-pointer"
                                             onClick={() => {router.push(`/profiles/${message.user_id}`)}}
@@ -259,7 +267,7 @@ const RoomPage = () => {
                                     >
                                         {message.message}
                                     </div>
-                                    <div className={`text-xxs ${message.user_id === userId ? 'right-align' : 'left-align'}`}>
+                                    <div className={`text-xxs ${message.user_id == storedUserId  ? 'right-align' : 'left-align'}`}>
                                         {new Date(message.date).toLocaleString()}
                                     </div>
                                 </div>
@@ -275,14 +283,14 @@ const RoomPage = () => {
                             className="w-6"
                             rows={1} 
                             autoResize
-                            disabled={!activeRoomId}
+                            disabled={!activeRoom?.id}
                         />
                         <Button
                             label="Send"
                             icon="pi pi-send"
                             onClick={handleSendMessage}
                             className="w-2 ml-2"
-                            disabled={!activeRoomId || !newMessage.trim()}
+                            disabled={!activeRoom?.id || !newMessage.trim()}
                         />
                     </div>
                 </div>

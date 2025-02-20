@@ -9,7 +9,8 @@ import { InputTextarea } from 'primereact/inputtextarea';
 import AnimalsList from '../../../components/AnimalList';
 import AnimalList from '../../../components/AnimalList';
 import { useRouter } from 'next/router';
-import useAuth from '../../../components/UseAuth';
+import useAuth from '../../../hooks/useAuth';
+import useDecode from '../../../hooks/useDecode';
 
 dotenv.config();
 
@@ -50,27 +51,15 @@ const AnimalAdd: React.FC = () => {
     const [searchText, setSearchText] = useState('');
     const searchDebounce = useRef<NodeJS.Timeout | null>(null);
     const [selectedUniversityId, setSelectedUniversityId] = useState<number>();
-    const [storedUserId, setStoredUserId] = useState<string | null>(null);
     const [userInfo, setUserInfo] = useState<User[]>([]);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [isLoadingUser, setIsLoadingUser] = useState<boolean>(true);
+    const {storedUserId, isLoading} = useDecode();
 
     useEffect(() => {
-        if (!isLoading) {
+        if (!isLoadingUser) {
             console.log("User Info:", userInfo);
         }
-    }, [userInfo, isLoading]);
-
-    useEffect(() => {
-        const delay = 1000;
-        const timer = setTimeout(() => {
-            if (typeof window !== 'undefined') {
-                const userId = localStorage.getItem('userId');
-                setStoredUserId(userId);
-            }
-        }, delay);
-
-        return () => clearTimeout(timer); 
-    }, []);
+    }, [userInfo, isLoadingUser]);
 
     useEffect(() => {
         if (storedUserId) {
@@ -86,16 +75,16 @@ const AnimalAdd: React.FC = () => {
             if (response.ok) {
                 const data = await response.json();
                 setUserInfo(data);  
-                setIsLoading(false);            
+                setIsLoadingUser(false);            
                 
             } 
             else {
                 console.error('Failed to fetch user info');
-                setIsLoading(false);
+                setIsLoadingUser(false);
             }
         } catch (error) {
             console.error('Error fetching user info:', error);
-            setIsLoading(false);
+            setIsLoadingUser(false);
         }
     };
 

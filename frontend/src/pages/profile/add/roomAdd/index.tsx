@@ -9,7 +9,8 @@ import { InputTextarea } from 'primereact/inputtextarea';
 import AnimalsList from '../../../../components/AnimalList';
 import AnimalList from '../../../../components/AnimalList';
 import { useRouter } from 'next/router';
-import useAuth from '../../../../components/UseAuth';
+import useAuth from '../../../../hooks/useAuth';
+import useDecode from '../../../../hooks/useDecode';
 
 dotenv.config();
 
@@ -33,18 +34,11 @@ const RoomAdd: React.FC = () => {
     const [tempText, setTempText] = useState<string>('');
     const [searchText, setSearchText] = useState('');
     const searchDebounce = useRef<NodeJS.Timeout | null>(null);
-    const [storedUserId, setStoredUserId] = useState<string | null>(null);
     const [roomType, setRoomType] = useState<string>('public');
     const [users, setUsers] = useState<User[]>([]);
     const [selectedUsersIds, setSelectedUsersIds] = useState<number[]>([]);
-    
-
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const userId = localStorage.getItem('userId');
-            setStoredUserId(userId);
-        }
-    }, []);
+    const router = useRouter();
+    const {storedUserId, isLoading} = useDecode();
 
     const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(event.target.value);
@@ -80,7 +74,6 @@ const RoomAdd: React.FC = () => {
     const handleUserClick = (userId: number) => {
         setSelectedUsersIds((prevSelectedUsersIds) => {
             if (prevSelectedUsersIds.includes(userId)) {
-                console.log(userId);
                 return prevSelectedUsersIds.filter((id) => id !== userId);
             } 
             else {
@@ -153,7 +146,6 @@ const RoomAdd: React.FC = () => {
     
         try {
             const command = new PutObjectCommand(params);
-            console.log(command);
             const s3Response = await s3Client.send(command);
             
             // public URL
@@ -196,10 +188,9 @@ const RoomAdd: React.FC = () => {
 
         if (response.ok) {
             const data = await response.json();
-            console.log('Room added successfully:', data);
         } 
         else {
-            console.error('Error adding post:', response.statusText);
+            console.error('Error adding room:', response.statusText);
         }
     };
 
@@ -215,6 +206,8 @@ const RoomAdd: React.FC = () => {
         if (imageUrl) {
             await uploadToDB(imageUrl);
         }
+
+        router.push("/profile");
     }
 
     return (

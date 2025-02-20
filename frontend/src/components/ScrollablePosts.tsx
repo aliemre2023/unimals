@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Button } from 'primereact/button';
 import ProfilePhoto from './ProfilePhoto';
 import PostVisualize from "../components/PostVisualize";
-import useAuth from './UseAuth';
 import { useRouter } from 'next/router';
 import { Sidebar } from "primereact/sidebar";
+import useDecode from '../hooks/useDecode';
 
 interface UserReaction {
     post_id: number | string;
@@ -17,18 +17,18 @@ interface ScrollablePostsListProps {
 
 const ScrollablePostsList: React.FC<ScrollablePostsListProps> = ({width}) => {
     const [latestPosts, setLatestPosts] = useState<Post[]>([]);
-    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isLoadingLike, setIsLoadingLike] = useState<boolean>(false);
     const [isPostVisible, setIsPostVisible] = useState(false);
     const [idPostVisible, setIdPostVisible] = useState<number | string>();
     const router = useRouter();
     const [userReactions, setUserReactions] = useState<UserReaction[]>([]);
     const [postAnimalsSidebar, setPostAnimalsSidebar] = useState<{ [key: number]: boolean }>({});
+    const {storedUserId, isLoading} = useDecode();
 
     useEffect(() => {
         fetch(`http://127.0.0.1:5000/api/post/latest`)
             .then((response) => {
                 const data = response.json();
-                console.log("DATA latest post:", data);
                 return data;
             })
             .then((data) => {
@@ -37,13 +37,7 @@ const ScrollablePostsList: React.FC<ScrollablePostsListProps> = ({width}) => {
         handleUserReactions();
     }, []);
 
-    useEffect(() => {
-        console.log(latestPosts);
-    }, []);
-
     const handleUserReactions = async () => {
-        const storedUserId = localStorage.getItem('userId');
-        console.log(storedUserId);
         if (!storedUserId) {
             return;
         }
@@ -59,17 +53,15 @@ const ScrollablePostsList: React.FC<ScrollablePostsListProps> = ({width}) => {
 
         const data = await response.json();
         setUserReactions(data);
-        console.log(userReactions);
     }
 
     const handleLike = async (postId: number | string) => {
-        if (isLoading) return;
-        const storedUserId = localStorage.getItem('userId');
+        if (isLoadingLike) return;
         if (!storedUserId) {
             router.push('/profile');
             return;
         }
-        setIsLoading(true);
+        setIsLoadingLike(true);
         try {
             const response = await fetch(`http://127.0.0.1:5000/api/posts/${postId}/like`, {
                 method: 'POST',
@@ -98,22 +90,18 @@ const ScrollablePostsList: React.FC<ScrollablePostsListProps> = ({width}) => {
         } catch (error) {
             console.error('Error liking post:', error);
         } finally {
-            setIsLoading(false);
+            setIsLoadingLike(false);
         }
     };
 
     const handleDislike = async (postId: number | string) => {
-        if (isLoading) return;
-        const storedUserId = localStorage.getItem('userId');
+        if (isLoadingLike) return;
         if (!storedUserId) {
             router.push('/profile');
             return;
         }
-        setIsLoading(true);
+        setIsLoadingLike(true);
         try {
-            console.log("postid: ", postId);
-            console.log("userid: ", storedUserId);
-
             const response = await fetch(`http://127.0.0.1:5000/api/posts/${postId}/dislike`, {
                 method: 'POST',
                 headers: {
@@ -141,12 +129,12 @@ const ScrollablePostsList: React.FC<ScrollablePostsListProps> = ({width}) => {
         } catch (error) {
             console.error('Error disliking post:', error);
         } finally {
-            setIsLoading(false);
+            setIsLoadingLike(false);
         }
     };
 
     const handleMessage = async (postId: number | string) => {
-        if (isLoading) return;
+        if (isLoadingLike) return;
         setIdPostVisible(postId);
         setIsPostVisible(true);
     };
@@ -175,14 +163,20 @@ const ScrollablePostsList: React.FC<ScrollablePostsListProps> = ({width}) => {
                 <ul className='m-4'>
                     {latestPosts.map((post) => (
                         <li key={post.id}
-                            className='border-solid border-2 border-primary-500 surface-overlay p-6 m-3 pb-1 pt-1 border-round-md relative'  
+                            className={`${postAnimalsSidebar[post.id as number] ? 'border-red-100' : 'border-primary-500'} border-solid border-2 surface-overlay p-6 m-3 pb-1 pt-1 border-round-md relative`}
                         >                      
                             <div className='absolute top-0 right-0'>
                                 <Button 
-                                    icon="pi pi-info"
-                                    style={{ borderRadius: '0 2px 0 50px' }}
+                                    style={{ borderRadius: '0 2px 0 50px' , width: '40px', height: '40px' }}
                                     onClick={() => handleSidebarToggle(post.id as number)}
-                                />
+                                    className={postAnimalsSidebar[post.id as number] ? 'bg-red-100 border-red-100' : ''}
+                                >
+                                    <img src="/icon_dog.png" 
+                                        alt="Animal Icon" 
+                                        style={{ width: '16px', height: '16px' }} 
+                                        className='-mt-1'
+                                    />
+                                </Button>
                             </div>
                             <div className='w-12 xl:flex lg:flex md:flex sm:flex align-items-center'>
                                 <ProfilePhoto img={post.user_profilePhoto} height='50' thick_border={false} type={"profiles"} id={post.user_id}/>
@@ -226,7 +220,7 @@ const ScrollablePostsList: React.FC<ScrollablePostsListProps> = ({width}) => {
                             {
                                 postAnimalsSidebar[post.id as number] ?
                                 <div className='w-12 absolute bottom-0 left-0'>
-                                    <div className='w-6 bg-blue-200 border-round-lg m-1 p-1'>
+                                    <div className='w-6 bg-red-100 border-round-lg m-1 p-1'>
                                         {post.postsAnimal.map((animal) => (
                                             <div 
                                                 key={animal.id as number} 

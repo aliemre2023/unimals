@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import FooterNav from '../../../components/FooterNav';
 import { useRouter } from 'next/router';
 import { Button } from 'primereact/button';
-import useAuth from '../../../components/UseAuth';
+import useAuth from '../../../hooks/useAuth';
 
 const add = () => {
     useAuth();

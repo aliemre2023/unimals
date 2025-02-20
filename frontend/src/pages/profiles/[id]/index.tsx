@@ -5,13 +5,15 @@ import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import GridPosts from '../../../components/GridPosts';
 import { useRouter } from 'next/router';
+import useAuth from '../../../hooks/useAuth';
+import useDecode from '../../../hooks/useDecode';
 
 const ProfileId: React.FC = () => {
     const router = useRouter();
     const { id } = router.query; 
     
     const [userInfo, setUserInfo] = useState<any[]>([]);
-    const [storedUserId, setStoredUserId] = useState(''); 
+    const {storedUserId, isLoading} = useDecode(); 
     const [storedUserFollowsIt, setStoredUserFollowsIt] = useState<boolean>();
     
     useEffect(() => {
@@ -21,16 +23,7 @@ const ProfileId: React.FC = () => {
     }, [id]);
 
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const storedUserId = localStorage.getItem('userId');
-            if (storedUserId) {
-                setStoredUserId(storedUserId);
-            }
-        }
-    }, []);
-
-    useEffect(() => {
-        if(storedUserId === id){
+        if(storedUserId == id){
             router.push("/profile");
         }
     }, [id, storedUserId]);
@@ -38,10 +31,8 @@ const ProfileId: React.FC = () => {
     useEffect(() => {
         if (userInfo.length > 0 && storedUserId) {
             if (userInfo[0].followers.includes(parseInt(storedUserId))) {
-                console.log("INN");
                 setStoredUserFollowsIt(true);
             } else {
-                console.log("OUT");
                 setStoredUserFollowsIt(false);
             }
         }
@@ -53,13 +44,10 @@ const ProfileId: React.FC = () => {
             if (response.ok) {
                 const data = await response.json();
                 setUserInfo(data);
-                console.log(data);
 
-                if (data[0].followers.includes(parseInt(storedUserId))) {
-                    console.log("INN");
+                if (data[0].followers.includes(parseInt(storedUserId as string))) {
                     setStoredUserFollowsIt(true);
                 } else {
-                    console.log("OUT");
                     setStoredUserFollowsIt(false);
                 }
             } 
@@ -81,7 +69,6 @@ const ProfileId: React.FC = () => {
                 body: JSON.stringify({ currentUserId, userId })
             });
             if (response.ok) {
-                console.log('Follow user');
                 setStoredUserFollowsIt(true);
                 fetchUserInfo(userId); // Refresh user info
             } else {
@@ -102,7 +89,6 @@ const ProfileId: React.FC = () => {
                 body: JSON.stringify({ currentUserId, userId })
             });
             if (response.ok) {
-                console.log('Unfollow user');
                 setStoredUserFollowsIt(false);
                 fetchUserInfo(userId); // Refresh user info
             } 
@@ -125,13 +111,13 @@ const ProfileId: React.FC = () => {
                             <Button 
                                 icon="pi pi-user-minus"
                                 className="p-button-rounded p-button-danger p-mr-2 ml-2"
-                                onClick={() => handleUnfollow(storedUserId, id as string)}
+                                onClick={() => handleUnfollow(storedUserId as string, id as string)}
                             />
                         ) : (
                             <Button 
                                 icon="pi pi-user-plus"
                                 className="p-button-rounded p-button-success p-mr-2 ml-2"
-                                onClick={() => {handleFollow(storedUserId, id as string)}}
+                                onClick={() => {handleFollow(storedUserId as string, id as string)}}
                             />
                         )}
                     </div>

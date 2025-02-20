@@ -1,10 +1,17 @@
-from flask import Blueprint, request, jsonify, session, redirect, url_for
+from flask import Blueprint, request, jsonify, session, make_response 
+import jwt
+import datetime
 from app.utils.data_get import *
 from app.utils.data_upd import *
 from app.utils.data_del import *
 from app.utils.data_add import *
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 api_bp = Blueprint("api", __name__)
+
+SECRET_KEY = os.getenv("DB_SECRETKEY")
 
 @api_bp.route('/animals', methods=['GET'])
 def api_animals():
@@ -130,43 +137,80 @@ def signup():
 
     return jsonify(user_info), 201
 
-@api_bp.route('/login', methods=['POST'])
+@api_bp.route('/login', methods=['POST', 'OPTIONS'])
 def login():
-    data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
+    # Handle preflight requests
+    if request.method == 'OPTIONS':
+        response = make_response()
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+        response.headers.add('Access-Control-Allow-Methods', 'POST')
+        response.headers.add('Access-Control-Allow-Origin', 'https://unimals.vercel.app') # http://localhost:3000
+        return response
 
-    if not username or not password:
-        print("IS HERE")
-        return jsonify({"error": "Missing required fields"}), 400
+    try:
+        data = request.get_json()
+        username = data.get('username')
+        password = data.get('password')
 
-    conn = create_connection()
-    cursor = conn.cursor()
+        if not username or not password:
+            return jsonify({"error": "Missing required fields"}), 400
 
-    # not exist
-    cursor.execute("""
-    SELECT id 
-    FROM users 
-    WHERE (name = %s AND password = %s)
-    """, (username, password))
-    existing_user = cursor.fetchone()
-    if not existing_user:
+        conn = create_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+        SELECT id 
+        FROM users 
+        WHERE (name = %s AND password = %s)
+        """, (username, password))
+        existing_user = cursor.fetchone()
+
+        if not existing_user:
+            cursor.close()
+            conn.close()
+            return jsonify({"error": "False username or password"}), 400
+
+        user_id = existing_user[0]
+        conn.commit()
         cursor.close()
         conn.close()
-        return jsonify({"error": "False username or password"}), 400
 
-    print(existing_user)
-    conn.commit()
-    cursor.close()
-    conn.close()
+        # Create JWT token
+        token = jwt.encode({
+            'user_id': user_id,
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=2)
+        }, SECRET_KEY, algorithm='HS256')
 
-    #session['user_id'] = existing_user[0]
+        # Create response
+        response = make_response(jsonify({
+            "message": "Login successful",
+            "user_id": user_id,
+            "token": token
+        }))
 
-    id = {
-        'user_id': existing_user[0]
-    }
+        # Set cookie
+        # Handled in frontend, securely
+        '''
+        response.set_cookie(
+            "session_token", token,
+            httponly=False,
+            secure=False,  # Set to True in production with HTTPS
+            samesite="Lax",  # Changed from Strict to Lax for better compatibility
+            path="/",
+            max_age=60*60*24*7  # 7 days
+        )
+        '''
 
-    return jsonify(id), 200
+        # Add CORS headers explicitly
+        response.headers.add('Access-Control-Allow-Origin', 'https://unimals.vercel.app') # http://localhost:3000
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+
+        return response
+
+    except Exception as e:
+        print(f"Login error: {str(e)}")
+        return jsonify({"error": "Server error occurred"}), 500
 
 @api_bp.route("/posts/<int:post_id>", methods=['DELETE'])
 def api_delete_post(post_id):
