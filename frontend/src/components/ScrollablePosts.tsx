@@ -35,7 +35,7 @@ const ScrollablePostsList: React.FC<ScrollablePostsListProps> = ({width}) => {
                 setLatestPosts(data);
             })
         handleUserReactions();
-    }, []);
+    }, [storedUserId]);
 
     const handleUserReactions = async () => {
         if (!storedUserId) {
