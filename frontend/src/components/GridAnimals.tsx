@@ -9,19 +9,19 @@ interface GridPostProps {
 }
 
 const GridPosts: React.FC<GridPostProps> = ({user_id, edit, travelling}) => {
-    const [userPosts, setUserPosts] = useState<any[]>([]);
+    const [userAnimals, setUserAnimals] = useState<Animal[]>([]);
     const router = useRouter();
 
     useEffect(() => {
-        fetchUserPosts(user_id);
+        fetchUserAnimals(user_id);
     }, [user_id]);
 
-    const fetchUserPosts = async (user_id: string) => {
+    const fetchUserAnimals = async (user_id: string) => {
         try {
-            const response = await fetch(`http://127.0.0.1:5000/api/users/${user_id}/posts`);
+            const response = await fetch(`http://127.0.0.1:5000/api/animals?user_id=${user_id}`);
             if (response.ok) {
                 const data = await response.json();
-                setUserPosts(data);
+                setUserAnimals(data);
             } else {
                 console.error('Failed to fetch user posts');
             }
@@ -30,58 +30,64 @@ const GridPosts: React.FC<GridPostProps> = ({user_id, edit, travelling}) => {
         }
     };
 
-    const handleDeletePost = async (post_id: string, user_id: string) => {
-        const response = await fetch(`http://127.0.0.1:5000/api/posts/${post_id}`, {
+    
+    const handleDeleteAnimal = async (post_id: string, user_id: string) => {
+        const response = await fetch(`http://127.0.0.1:5000/api/animals/${post_id}/delete`, {
             method: 'DELETE',
         });
         if (response.ok) {
-            fetchUserPosts(user_id);
+            fetchUserAnimals(user_id);
         } 
         else {
             console.error('Failed to delete post');
         }
         
     };
+    
 
     return (
         <div className='grid-container bottom-fixer'
         >
-            {userPosts.length == 0 && !travelling && (
+            {userAnimals.length == 0 && !travelling && (
                 <div className='grid-item flex align-items-center justify-content-center bg-blue-100 p-8'>
                     <Button
                         icon="pi pi-plus"
                         className="p-button-rounded p-button-lg fixed p-5"
                         onClick={() => {
-                            router.push(`/profile/add/postAdd`);
+                            router.push(`/profile/add/animalAdd`);
                         }}
                     />
                 </div>   
             )}
 
-            {userPosts.map((post) => (
+            {userAnimals.map((animal) => (
                 <div className='grid-item'>
                     {edit && (
                         <Button
                             icon="pi pi-trash"
                             className="p-button-rounded p-button-sm p-button-danger p-absolute p-top-0 p-right-0"
                             onClick={() => 
-                                handleDeletePost(post.post_id, user_id)
+                                handleDeleteAnimal(animal.id as string, user_id)
                             }
                         />
                     )}
-                    <p className='pt-0 p-2'>{post.post_description}</p>
-                    <div key={post.id} className=' flex align-items-center justify-content-center'>
-                        
+                    <div className='w-12 flex justify-conntent-center'>
+                        <p className='pt-0 p-2 w-12 text-center font-bold'>{animal.name}</p>
+                    </div>
+                    <div key={animal.id} className=' flex align-items-center justify-content-center'>  
                         <img
-                            src={post.post_image || "/default_post.jpg"}
-                            className="w-full h-32 object-cover"
+                            src={animal.profile_photo || "/default_animal.jpg"}
+                            className="w-full h-32 object-cover cursor-pointer"
                             onError={(e) => {
-                                e.currentTarget.src = "/default_post.jpg";
+                                e.currentTarget.src = "/default_animal.jpg";
+                            }}
+                            onClick={() => {
+                                router.push(`/animals/${animal.id}`)
                             }}
                         />
                     </div>
                     <div className='w-12 flex justify-conntent-center'>
-                        <p className='pb-0 p-2 w-12 text-center font-italic text-xs'>{post.post_posted_date}</p>
+                        <p className='pb-0 p-2 w-12 text-center font-italic'>{animal.kind}</p>
                     </div>
                 </div>
             ))}

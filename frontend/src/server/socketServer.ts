@@ -11,7 +11,7 @@ export class SocketServer {
             SocketServer.io = new SocketIOServer(httpServer, {
                 path: '/api/socketio',
                 cors: {
-                    origin: '*',
+                    origin: 'https://unimals.vercel.app',
                     methods: ['GET', 'POST'],
                     allowedHeaders: ['Content-Type'],
                     credentials: true

@@ -24,11 +24,11 @@ const RoomPage = () => {
     const router = useRouter();
     const {storedUserId, isLoading} = useDecode();
 
-    const socket = useSocket('http://localhost:3000'); //  https://unimals.vercel.app
+    const socket = useSocket('https://unimals.vercel.app'); //  https://unimals.vercel.app
     //const socket = useSocket('https://unimals.vercel.app');
 
     useEffect(() => {
-        if (!socket){
+        if (!socket) {
             console.log("Socket.io does not run");
             return;
         }
@@ -36,11 +36,13 @@ const RoomPage = () => {
 
         // Join room when activeRoomId changes
         if (activeRoom?.id) {
+            console.log("Joined room: ", activeRoom?.room_name);
             socket.emit('joinRoom', activeRoom?.id);
         }
 
         // Listen for new messages
         socket.on('newMessage', (message) => {
+            console.log("Message received:", message);
             setRoomInfo(prev => ({
                 ...prev,
                 messages: [...prev.messages, message]
@@ -129,6 +131,7 @@ const RoomPage = () => {
                 body: JSON.stringify({
                     user_id: storedUserId,
                     message: newMessage,
+                    room_type: activeRoom.is_public
                 }),
             });
 
@@ -147,8 +150,7 @@ const RoomPage = () => {
                 });
 
                 setNewMessage('');
-
-
+                fetchRoomInfo(activeRoom.id);
                 
                 /*
                 setNewMessage('');
@@ -243,25 +245,30 @@ const RoomPage = () => {
                     )}
                 </div>
 
-                <div className='w-8 h-screen bg-blue-100 flex flex-col p-2'>
+                <div className='w-8 h-screen bg-blue-100 flex flex-col p-2 pt-0 pb-0'>
                     <div 
                         ref={scrollableRef}
-                        className="scrollable w-12"
+                        className="scrollable w-12 pb-6"
                         style={{ 
-                            maxHeight: 'calc(100vh - 175px)',
+                            maxHeight: 'calc(100vh - 17vh)',
                         }}
                     >
                         {roomInfo.messages.map((message, index) => (
                             <div key={index} className={`flex ${message.user_id == storedUserId ? 'justify-content-end' : 'justify-content-start'}`}>
-                                <div className={`w-8 p-3 m-2 ${message.user_id == storedUserId ? 'bg-green-300' : 'bg-gray-300'} border-round-lg`}>
-                                    {message.user_id !== storedUserId && (
+                                <div className={`w-8 p-3 p-2 m-2 ${message.user_id == storedUserId ? 'bg-green-300' : 'bg-gray-300'} border-round-lg`}>
+                                    {message.user_id != storedUserId ? 
+                                    (
                                         <div 
                                             className="text-sm font-bold mb-1 cursor-pointer"
                                             onClick={() => {router.push(`/profiles/${message.user_id}`)}}
                                         >
                                             {message.user_name}
                                         </div>
-                                    )}
+                                    ) :
+                                    (
+                                        <div></div>
+                                    )
+                                    }
                                     <div className='left-align'
                                         style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
                                     >
@@ -275,7 +282,7 @@ const RoomPage = () => {
                         ))}
                     </div>
 
-                    <div className="flex w-12 bottom-10 p-2 pr-6 fixed">
+                    <div className="flex w-12 bottom-0 fixed room_text_bottommargin pb-2 pr-6" >
                         <InputTextarea 
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}

@@ -82,13 +82,18 @@ body, html, .overflow_hidden {
 .footer-height {
   height: 7vh;
 }
+.room_text_bottommargin{
+  margin-bottom: 7vh;
+}
+
+
 
 
 .grid-container{
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 1rem;
-  overflow-y: auto; 
+  /*overflow-y: auto; */
   max-height: 80vh;
   padding: 1rem;
 }

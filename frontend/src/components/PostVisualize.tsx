@@ -6,6 +6,7 @@ import { InputTextarea } from "primereact/inputtextarea";
 import Profile from "../pages/profile";
 import ProfilePhoto from "./ProfilePhoto";
 import { useRouter } from 'next/router';
+import useDecode from "../hooks/useDecode";
 
 interface PostVisualizeProps {
     post_id: string;
@@ -17,7 +18,8 @@ const PostVisualize: React.FC<PostVisualizeProps> = ({ post_id, visible: initial
     const [visible, setVisible] = useState(initialVisible);
     const [newComment, setNewComment] = useState<string>('');
     const [comments, setComments] = useState<Comment[]>([]);
-    const [storedUserId, setStoredUserId] = useState<string | null>(null);
+    //const [storedUserId, setStoredUserId] = useState<string | null>(null);
+    const {storedUserId, isLoading} = useDecode();
     const router = useRouter();
 
     const fetchComments = async (post_id: string) => {
@@ -54,13 +56,9 @@ const PostVisualize: React.FC<PostVisualizeProps> = ({ post_id, visible: initial
 
 
     useEffect(() => {
-        if(typeof window !== 'undefined') {
-            const userId = localStorage.getItem('userId');
-            setStoredUserId(userId);
-        }
         setVisible(initialVisible);
         fetchComments(post_id as string);
-    }, [initialVisible, post_id]);
+    }, [initialVisible, post_id, storedUserId]);
 
     return (
         <div className="flex justify-end p-4">

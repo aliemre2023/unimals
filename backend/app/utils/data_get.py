@@ -1,7 +1,7 @@
 from app.utils.db_utils import *
 from flask import jsonify
 
-def get_animals(searchName = None, animalId = None, universityId = None, goodyAlgorithm = None):
+def get_animals(searchName = None, animalId = None, universityId = None, goodyAlgorithm = None, userId = None):
     conn = create_connection()
     cursor = conn.cursor()
 
@@ -43,7 +43,7 @@ def get_animals(searchName = None, animalId = None, universityId = None, goodyAl
     parameters = []
 
     if(searchName): 
-        query += " AND (a.name LIKE %s)"
+        query += " AND (LOWER(a.name) LIKE LOWER(%s))"
         parameters.append('%' + searchName + '%')
     if(animalId): 
         query += " AND (a.id = %s)"
@@ -57,6 +57,9 @@ def get_animals(searchName = None, animalId = None, universityId = None, goodyAl
             (SELECT COUNT(*) FROM animal_likes WHERE animal_likes.animal_id = a.id AND animal_likes.is_like = false) = 0
         ) IS NOT TRUE
         """
+    if(userId): 
+        query += " AND (a.added_by = %s)"
+        parameters.append(userId)
 
     query += """
     ORDER BY goody_score DESC;
@@ -359,7 +362,7 @@ def get_universities(searchName = None, uniId = None):
     parameters = []
 
     if(searchName): 
-        query += "AND (u.name LIKE %s OR u.abbreviation LIKE %s)"
+        query += "AND (LOWER(u.name) LIKE LOWER(%s) OR LOWEr(u.abbreviation) LIKE LOWER(%s))"
         parameters.append('%' + searchName + '%')
         parameters.append('%' + searchName + '%')
     if(uniId): 
@@ -440,7 +443,7 @@ def get_profiles(searchName = None, uniId = None):
 
     parameters = []
     if(searchName): 
-        query += "AND (users.name LIKE %s)"
+        query += "AND (LOWER(users.name) LIKE LOWER(%s))"
         parameters.append('%' + searchName + '%')
     if(uniId): 
         query += "AND (users.university_id = %s)"
@@ -481,7 +484,7 @@ def get_publicRooms(room_name = None):
 
     parameters = []
     if(room_name):
-        query += " AND rooms.room_name LIKE %s"
+        query += " AND LOWER(rooms.room_name) LIKE LOWER(%s)"
         parameters.append("%" + room_name + "%")
 
     query += ";"
@@ -539,7 +542,7 @@ def get_secretRooms(user_id, room_name = None):
     parameters.append(user_id)
 
     if(room_name):
-        query += " AND (rooms.room_name LIKE %s)"
+        query += " AND (LOWER(rooms.room_name) LIKE LOWER(%s))"
         parameters.append("%" + room_name + "%")
 
     query += ";"

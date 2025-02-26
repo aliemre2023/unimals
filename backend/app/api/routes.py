@@ -1,3 +1,4 @@
+
 from flask import Blueprint, request, jsonify, session, make_response 
 import jwt
 import datetime
@@ -5,6 +6,7 @@ from app.utils.data_get import *
 from app.utils.data_upd import *
 from app.utils.data_del import *
 from app.utils.data_add import *
+from app.utils.censorship import censorship
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -19,7 +21,8 @@ def api_animals():
     animalId = request.args.get('id', '')
     universityId = request.args.get('university_id', '')
     goodyAlgorithm = request.args.get('is_goody', '')
-    animals = get_animals(animalName, animalId, universityId, goodyAlgorithm)
+    userId = request.args.get('user_id', '')
+    animals = get_animals(animalName, animalId, universityId, goodyAlgorithm, userId)
     return animals
 
 @api_bp.route('/profiles', methods=['GET'])
@@ -103,6 +106,9 @@ def signup():
     if not username or not email or not password:
         return jsonify({"error": "Missing required fields"}), 400
 
+    if(censorship(username) != username):
+        return jsonify({"error": "!!👮👮👮👮No sir👮👮👮👮!!"}), 400
+
     conn = create_connection()
     cursor = conn.cursor()
 
@@ -145,7 +151,7 @@ def login():
         response.headers.add('Access-Control-Allow-Credentials', 'true')
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
         response.headers.add('Access-Control-Allow-Methods', 'POST')
-        response.headers.add('Access-Control-Allow-Origin', 'https://unimals.vercel.app') # http://localhost:3000
+        response.headers.add('Access-Control-Allow-Origin', 'https://unimals.vercel.app') # http://localhost:3000 https://unimals.vercel.app
         return response
 
     try:
@@ -203,7 +209,7 @@ def login():
         '''
 
         # Add CORS headers explicitly
-        response.headers.add('Access-Control-Allow-Origin', 'https://unimals.vercel.app') # http://localhost:3000
+        response.headers.add('Access-Control-Allow-Origin', 'https://unimals.vercel.app') 
         response.headers.add('Access-Control-Allow-Credentials', 'true')
 
         return response
@@ -216,6 +222,11 @@ def login():
 def api_delete_post(post_id):
     delete_post_by_id(post_id)
     return jsonify({"message": "Post deleted successfully"}), 200
+
+@api_bp.route("/animals/<int:animal_id>/delete", methods=['DELETE'])
+def api_delete_animal(animal_id):
+    delete_animal_by_id(animal_id)
+    return jsonify({"message": "Animal deleted successfully"}), 200
 
 @api_bp.route("/posts/add", methods=['POST'])
 def api_add_post():
@@ -289,8 +300,8 @@ def api_send_chatMessage(room_id):
     print("infos: ", infos)
     user_id = infos['user_id']
     message = infos['message']
-    print("heyyy: ", room_id, user_id, message)
-    sendedMessage = send_messageToChat(room_id, user_id, message)
+    room_type = infos['room_type']
+    sendedMessage = send_messageToChat(room_id, user_id, message, room_type)
     return sendedMessage
 
 @api_bp.route("/rooms/add", methods=['POST'])

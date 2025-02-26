@@ -10,6 +10,14 @@ def delete_post_by_id(post_id):
     cursor.close()
     conn.close()
 
+def delete_animal_by_id(animal_id):
+    conn = create_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM animals WHERE id = %s", (animal_id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
 
 def del_follow(users):
     conn = create_connection()

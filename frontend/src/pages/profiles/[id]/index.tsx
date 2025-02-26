@@ -7,6 +7,7 @@ import GridPosts from '../../../components/GridPosts';
 import { useRouter } from 'next/router';
 import useAuth from '../../../hooks/useAuth';
 import useDecode from '../../../hooks/useDecode';
+import GridAnimals from '../../../components/GridAnimals';
 
 const ProfileId: React.FC = () => {
     const router = useRouter();
@@ -15,6 +16,7 @@ const ProfileId: React.FC = () => {
     const [userInfo, setUserInfo] = useState<any[]>([]);
     const {storedUserId, isLoading} = useDecode(); 
     const [storedUserFollowsIt, setStoredUserFollowsIt] = useState<boolean>();
+    const [grid, setGrid] = useState('post');
     
     useEffect(() => {
         if (id) {
@@ -100,46 +102,80 @@ const ProfileId: React.FC = () => {
         }
     };
 
+    const handleGridPost = () => {
+        setGrid('post');  
+    };
+    const handleGridAnimal = () => {
+        setGrid('animal');
+    };
+
     return (
         <div className="w-full">
-            <div className='lg:flex md:flex p-3 bg-blue-700'>
-                <ProfilePhoto img={userInfo.length > 0 && userInfo[0].user_profile_photo} height='250' thick_border={true} type={"profiles"} id={id as string}/>
-                <div className='w-11 pl-3 text-center justify-content-center align-items-center'>
-                    <div className='p-4 text-4xl flex justify-content-center'>
-                        {userInfo.length > 0 && userInfo[0].user_name} 
-                        {storedUserFollowsIt ? (
-                            <Button 
-                                icon="pi pi-user-minus"
-                                className="p-button-rounded p-button-danger p-mr-2 ml-2"
-                                onClick={() => handleUnfollow(storedUserId as string, id as string)}
-                            />
-                        ) : (
-                            <Button 
-                                icon="pi pi-user-plus"
-                                className="p-button-rounded p-button-success p-mr-2 ml-2"
-                                onClick={() => {handleFollow(storedUserId as string, id as string)}}
-                            />
-                        )}
-                    </div>
-                    <div className='flex justify-content-around text-xl'>
-                        <div>
-                            <div>Post</div>
-                            <div>{userInfo.length > 0 && userInfo[0].user_post_count}</div>
+            <div className='scrollable'>
+                <div className='lg:flex md:flex p-3 bg-blue-700'>
+                    <ProfilePhoto img={userInfo.length > 0 && userInfo[0].user_profile_photo} height='250' thick_border={true} type={"profiles"} id={id as string}/>
+                    <div className='w-11 pl-3 text-center justify-content-center align-items-center'>
+                        <div className='p-4 text-4xl flex justify-content-center'>
+                            {userInfo.length > 0 && userInfo[0].user_name} 
+                            {storedUserFollowsIt ? (
+                                <Button 
+                                    icon="pi pi-user-minus"
+                                    className="p-button-rounded p-button-danger p-mr-2 ml-2"
+                                    onClick={() => handleUnfollow(storedUserId as string, id as string)}
+                                />
+                            ) : (
+                                <Button 
+                                    icon="pi pi-user-plus"
+                                    className="p-button-rounded p-button-success p-mr-2 ml-2"
+                                    onClick={() => {handleFollow(storedUserId as string, id as string)}}
+                                />
+                            )}
                         </div>
-                        <div>
-                            <div>Takipçi</div>
-                            <div>{userInfo.length > 0 && userInfo[0].user_follower_count}</div>
+                        <div className='flex justify-content-around text-xl'>
+                            <div>
+                                <div>Post</div>
+                                <div>{userInfo.length > 0 && userInfo[0].user_post_count}</div>
+                            </div>
+                            <div>
+                                <div>Takipçi</div>
+                                <div>{userInfo.length > 0 && userInfo[0].user_follower_count}</div>
+                            </div>
+                            <div>
+                                <div>Takip</div>
+                                <div>{userInfo.length > 0 && userInfo[0].user_following_count}</div>
+                            </div>
                         </div>
-                        <div>
-                            <div>Takip</div>
-                            <div>{userInfo.length > 0 && userInfo[0].user_following_count}</div>
-                        </div>
-                    </div>
-                    
-                </div>    
+                        
+                    </div>    
+                </div>
+                <div className='w-12 flex'>
+                    <button
+                        className="w-6 bg-blue-600 border-0 border-blue-100"
+                        onClick={handleGridPost}
+                    >
+                        <img
+                            src='/icon_post.png'
+                            width='30px'
+                        />
+                    </button>
+                    <button
+                        className="w-6 bg-blue-600 border-0 border-blue-100"
+                        onClick={handleGridAnimal}
+                    >
+                        <img
+                            src='/icon_dog.png'
+                            width='30px'
+                        />
+                    </button>
+                </div>
+                {grid == 'post' ?
+                    <GridPosts user_id={id as string} edit={false} travelling={true}/>
+                    :
+                    <GridAnimals user_id={id as string} edit={false} travelling={true}/>
+                }
             </div>
-            <GridPosts user_id={id as string} edit={false} travelling={true}/>
             <FooterNav />
+            
         </div>
     )
 }

@@ -8,6 +8,7 @@ import { useRouter } from 'next/router';
 import Cookies from 'js-cookie'
 import { jwtDecode } from "jwt-decode";
 import useDecode from '../../hooks/useDecode';
+import GridAnimals from '../../components/GridAnimals';
 
 const Profile = () => {
     const [userInfo, setUserInfo] = useState<any[]>([]);
@@ -24,6 +25,7 @@ const Profile = () => {
     const [falseMessage, setFalseMessage] = useState('');
     const [loggedOutMessage, setLoggedOutMessage] = useState('');
     const [editting, setEditting] = useState<boolean>(false);
+    const [grid, setGrid] = useState('post');
 
     const {storedUserId, isLoading} = useDecode();
     useEffect(() => {
@@ -131,17 +133,11 @@ const Profile = () => {
         setEditting(!editting);
     };
 
-    const updateProfilePhoto = async (user_id: string, new_pp: string) => {
-        const response = await fetch(`http://127.0.0.1:5000/api/users/${user_id}/update/profile_photo/${new_pp}`, {
-            method: 'DELETE',
-        });
-        if (response.ok) {
-            //console.log(`${user_id} ppp updated successfully`);
-        } 
-        else {
-            console.error(`Failed to update user pp: ${new_pp}`);
-        }
-        
+    const handleGridPost = () => {
+        setGrid('post');  
+    };
+    const handleGridAnimal = () => {
+        setGrid('animal');
     };
 
     if (!userId) {
@@ -149,7 +145,7 @@ const Profile = () => {
             <div className="w-full max-w-6xl mx-auto">
         
                 {/* Forms Container */}
-                <div className="flex flex-col md:flex-row justify-center items-stretch">
+                <div className="scrollable md:flex flex-col md:flex-row justify-center items-stretch">
                     {/* Login Form */}
                     <div className="w-full md:w-1/2 flex justify-center p-8 border-b md:border-b-0 md:border-r">
                         <div className="w-full max-w-md space-y-4 text-center">
@@ -243,7 +239,7 @@ const Profile = () => {
     return (
         <div className="w-full">
             <div className='scrollable'>
-                <div className='lg:flex md:flex p-3 bg-blue-700'>
+                <div className='flex md:flex p-3 bg-blue-700 relative'>
                     <ProfilePhoto 
                         img={userInfo.length > 0 && userInfo[0].user_profile_photo} 
                         height='250' 
@@ -252,7 +248,7 @@ const Profile = () => {
                         id={userId as string}
                         
                     />
-                    <div className="p-4 md:p-0 sm:p-0">
+                    <div className="absolute top-0 left-0 p-4 md:p-0 sm:p-0">
                         <Button
                             className="p-button-danger m-1"
                             icon="pi pi-sign-out"
@@ -276,7 +272,7 @@ const Profile = () => {
                                 }}
                             />
                         </div>   
-                    )}
+                        )}
                     </div>
                     <div className='w-11 pl-3 text-center justify-content-center align-items-center'>
                         <div className='p-4 text-4xl'>
@@ -298,8 +294,32 @@ const Profile = () => {
                         </div>
                     </div>    
                 </div>
-                <GridPosts user_id={userId} edit={editting} travelling={false}/>
+                <div className='w-12 flex'>
+                    <button
+                        className="w-6 bg-blue-600 border-0 border-blue-100"
+                        onClick={handleGridPost}
+                    >
+                        <img
+                            src='./icon_post.png'
+                            width='30px'
+                        />
+                    </button>
+                    <button
+                        className="w-6 bg-blue-600 border-0 border-blue-100"
+                        onClick={handleGridAnimal}
+                    >
+                        <img
+                            src='./icon_dog.png'
+                            width='30px'
+                        />
+                    </button>
                 </div>
+                {grid == 'post' ?
+                    <GridPosts user_id={userId} edit={editting} travelling={false}/>
+                    :
+                    <GridAnimals user_id={userId} edit={editting} travelling={false}/>
+                }
+            </div>
             <FooterNav />
         </div>
     )
