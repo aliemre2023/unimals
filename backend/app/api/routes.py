@@ -309,3 +309,9 @@ def api_add_room():
     room = request.get_json()
     added_room = add_newRoom(room)
     return added_room
+
+@api_bp.route("/animals/<int:animal_id>/comments/add", methods=['POST'])
+def api_add_commentAnimal(animal_id):
+    comment = request.get_json()
+    added_comment = add_newCommentAnimal(comment, animal_id)
+    return added_comment

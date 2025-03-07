@@ -7,6 +7,7 @@ import { useRouter } from 'next/router';
 import { Button } from 'primereact/button';
 import { integer } from 'aws-sdk/clients/cloudfront';
 import useDecode from '../../../hooks/useDecode';
+import { InputTextarea } from 'primereact/inputtextarea';
 
 const AnimalInfo = () => {
     const router = useRouter();
@@ -14,17 +15,25 @@ const AnimalInfo = () => {
     const [animalInfo, setAnimalInfo] = useState<Animal[]>([]);
     const [userReactions, setUserReactions] = useState<UserReaction[]>([]);
     const {storedUserId, isLoading} = useDecode();
+    const [grid, setGrid] = useState('post');
+    const [newComment, setNewComment] = useState<string>('');
+    const [comments, setComments] = useState<CommentAnimal[]>([]);
 
     useEffect(() => {
-        fetch(`http://127.0.0.1:5000/api/animals?id=${id}`)
-            .then((response) => response.json())
-
-            .then((data) => {
-                setAnimalInfo(data);
-            });
-        
+        getAnimalInfo(id as string);
         handleUserReactions(storedUserId as string);
     }, [id, storedUserId]);
+
+    const getAnimalInfo = async (id: string) => {
+        const response = await fetch(`http://127.0.0.1:5000/api/animals?id=${id}`);
+        if (response.ok) {
+            const data = await response.json();
+            setAnimalInfo(data);
+        }
+        else {
+            console.error('Failed to fetch user posts');
+        }
+    }
 
     const handleUserReactions = async (storedUserId: string) => {
         if (!storedUserId) {
@@ -123,6 +132,38 @@ const AnimalInfo = () => {
         return reaction ? reaction.is_like : null;
     };
 
+    const handleGridPost = () => {
+        setGrid('post');  
+    };
+    const handleGridComment = () => {
+        setGrid('animal');
+    };
+
+    const addNewComment = async () => {
+        if(newComment.length == 0){
+            return;
+        }
+        if(!storedUserId){
+            router.push('/profile')
+            return;
+        }
+
+        const newCommentInfo = {
+            user_id: storedUserId,
+            comment: newComment,
+        };
+        const response = await fetch(`http://127.0.0.1:5000/api/animals/${id}/comments/add`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(newCommentInfo)
+        });
+        const data = await response.json();
+        setNewComment('');
+        getAnimalInfo(id as string);
+    };
+
     return (
         <div className="w-full">
             <div className='scrollable'>
@@ -171,9 +212,21 @@ const AnimalInfo = () => {
                             </div>
                         </div>    
                 </div>
+                <div className='w-12 flex'>
+                    <Button
+                        className="pi pi-image w-6 bg-blue-600 border-0 border-blue-100"
+                        onClick={handleGridPost}
+                    >
+                    </Button>
+                    <Button
+                        className="pi pi-comment w-6 bg-blue-600 border-0 border-blue-100"
+                        onClick={handleGridComment}
+                    >
+                    </Button>
+                </div>
 
-                <div className='grid-container'>
-
+                {grid == 'post' ?
+                <div className='grid-container'> 
                     {animal.posts.map((post) => (
                         <div key={post.id} className='grid-item'> 
                             <div className=''>
@@ -196,8 +249,46 @@ const AnimalInfo = () => {
                             </div>
                         </div>
                     ))}
-
                 </div>
+                :
+                <div>  
+                    <div className='w-12 flex'>  
+                        <div className='w-2'></div>
+                        <span className="p-input-icon-left w-8 justify-content-center flex p-1">
+                            <InputTextarea 
+                                value={newComment} 
+                                onChange={(e) => setNewComment(e.target.value)} 
+                                placeholder="Enter comment" 
+                                className="p-inputtext p-component w-12"
+                                rows={1}
+                                autoResize
+                            />
+                            <Button 
+                                className="bg-green-300"
+                                icon="pi pi-send"
+                                onClick={() => {addNewComment()}}
+                            />
+                        </span>
+                    </div> 
+                    <div className='w-12 flex'>
+                        <div className='w-2'></div>
+                        <div className='w-8'>
+                            {animal.comments.map((comment) => (
+                                <div className='w-12 p-2 m-1 border-round-md bg-blue-100'> 
+                                    <div className='flex'>
+                                        { comment.user_id && 
+                                            <ProfilePhoto img={comment.user_photo} height={"30"} thick_border={false} type={"profiles"} id={comment.user_id}/>
+                                        }
+                                        <div className='font-bold p-2'>{comment.user_name}</div> 
+                                    </div>
+                                    <div className=''>{comment.comment}</div>
+                                    
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+                }
             </div>
         
             <FooterNav />

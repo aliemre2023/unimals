@@ -9,4 +9,5 @@ interface Animal {
     university_abbreviation: string;
     goody_score: number;
     posts: Post[];
+    comments: CommentAnimal[];
 }

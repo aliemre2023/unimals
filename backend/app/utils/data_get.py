@@ -88,6 +88,9 @@ def get_animals(searchName = None, animalId = None, universityId = None, goodyAl
         if animalId:
             posts = get_animals_posts(animalId)
             animal['posts'] = posts
+        if animalId:
+            comments = get_animals_comments(animalId)
+            animal['comments'] = comments
         
         animals.append(animal)
 
@@ -147,6 +150,43 @@ def get_animals_posts(animalId):
             })
 
     return posts
+
+def get_animals_comments(animalId):
+    conn = create_connection()
+    cursor = conn.cursor()
+
+    query = """
+    SELECT
+        comments_animal.animal_id,
+        comments_animal.user_id,
+        users.name,
+        users.profile_photo,
+        comments_animal.comment
+    FROM animals
+    LEFT JOIN comments_animal ON animals.id = comments_animal.animal_id
+    LEFT JOIN users ON comments_animal.user_id = users.id
+    WHERE animals.id = %s
+    ORDER BY comments_animal.added_date DESC;
+
+    """
+
+    cursor.execute(query,  (animalId,))
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    comments = []
+    if(len(rows) != 0):
+        for row in rows:
+            comments.append({
+                'animal_id': row[0],  
+                'user_id': row[1],
+                'user_name': row[2],
+                'user_photo': row[3],
+                'comment': row[4],
+            })
+
+    return comments
 
 
 def get_latest_posts():

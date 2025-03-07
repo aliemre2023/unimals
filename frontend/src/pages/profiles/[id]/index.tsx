@@ -149,22 +149,18 @@ const ProfileId: React.FC = () => {
                     </div>    
                 </div>
                 <div className='w-12 flex'>
-                    <button
-                        className="w-6 bg-blue-600 border-0 border-blue-100"
+                    <Button
+                        className="pi pi-image w-6 bg-blue-600 border-0 border-blue-100"
                         onClick={handleGridPost}
                     >
-                        <img
-                            src='/icon_post.png'
-                            width='30px'
-                        />
-                    </button>
+                    </Button>
                     <button
                         className="w-6 bg-blue-600 border-0 border-blue-100"
                         onClick={handleGridAnimal}
                     >
                         <img
-                            src='/icon_dog.png'
-                            width='30px'
+                            src='/icon_dog_white.png'
+                            width='20px'
                         />
                     </button>
                 </div>

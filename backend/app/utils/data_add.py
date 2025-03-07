@@ -71,6 +71,23 @@ def add_newComment(comment, postId):
     return jsonify({'status': 200,
                     'comment_id': comment_id})
 
+def add_newCommentAnimal(comment, animalId):
+    conn = create_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    INSERT INTO comments_animal (animal_id, user_id, comment)
+    VALUES (%s, %s, %s)
+    RETURNING id;
+    """, (animalId, comment['user_id'], censorship(comment['comment'])))
+    comment_id = cursor.fetchone()[0]
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return jsonify({'status': 200,
+                    'comment_id': comment_id})
+
 
 def add_follow(users):
     conn = create_connection()
