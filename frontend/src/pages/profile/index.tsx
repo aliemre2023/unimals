@@ -27,6 +27,11 @@ const Profile = () => {
     const [editting, setEditting] = useState<boolean>(false);
     const [grid, setGrid] = useState('post');
 
+    const [forgotButtonLabel, setForgotButtonLabel] = useState('forgot my password');
+    const [forgot_mail, setForgotMail] = useState('');
+    const [forgotPasswordClicked, setForgotPasswordClicked] = useState<boolean>(false);
+    const [forgotMessage, setForgotMessage] = useState('');
+
     const {storedUserId, isLoading} = useDecode();
     useEffect(() => {
         if(!isLoading && storedUserId){
@@ -37,7 +42,7 @@ const Profile = () => {
 
     const fetchUserInfo = async (userId: string) => {
         try {
-            const response = await fetch(`http://127.0.0.1:5000/api/users/${userId}`);
+            const response = await fetch(`https://unimals-backend.vercel.app/api/users/${userId}`);
             if (response.ok) {
                 const data = await response.json();
                 setUserInfo(data);
@@ -50,7 +55,7 @@ const Profile = () => {
     };
 
     const handleLogin = async () => {
-        const response = await fetch('http://127.0.0.1:5000/api/login', {
+        const response = await fetch('https://unimals-backend.vercel.app/api/login', {
             credentials: 'include',
             method: 'POST',
             headers: {
@@ -96,7 +101,7 @@ const Profile = () => {
     };
 
     const handleSignUp = async () => {
-        const response = await fetch('http://127.0.0.1:5000/api/signup', {
+        const response = await fetch('https://unimals-backend.vercel.app/api/signup', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -140,6 +145,43 @@ const Profile = () => {
         setGrid('animal');
     };
 
+    const sendMail = async (forgot_mail: string) => {
+        setForgotMessage("Mail sending...")
+        try{
+            const response = await fetch(`https://unimals-backend.vercel.app/api/forgotmypassword`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({email: forgot_mail})
+            });
+            const data = await response.json();
+
+            setForgotMessage(data.response_message)
+        }
+        catch{
+            setForgotMessage("An issue occurred when mail try to send!")
+        }
+    }
+
+    const handleForgotPassword = () => {
+        if(!forgotPasswordClicked){
+            setForgotPasswordClicked(true);
+            setForgotButtonLabel('Send Mail');
+        }
+        else{
+            if(!forgot_mail || forgot_mail == ""){
+                setForgotMessage('Fill required area');
+            }
+            else{
+                sendMail(forgot_mail);
+                //setForgotMessage('Mail sended');
+            }
+            console.log(forgot_mail);
+        }
+        
+    }
+
     if (!userId) {
         return (
             <div className="w-full max-w-6xl mx-auto">
@@ -149,38 +191,65 @@ const Profile = () => {
                     {/* Login Form */}
                     <div className="w-full md:w-1/2 flex justify-center p-8 border-b md:border-b-0 md:border-r">
                         <div className="w-full max-w-md space-y-4 text-center">
-                        <div className="text-lg font-medium mb-4">Login</div>
-                        <InputText
-                            id="login_username"
-                            value={login_username}
-                            onChange={(e) => setLoginUsername(e.target.value)}
-                            placeholder="Username"
-                            className="w-full"
-                        />
-                        <InputText
-                            id="login_password"
-                            value={login_password}
-                            onChange={(e) => setLoginPassword(e.target.value)}
-                            placeholder="Password"
-                            type="password"
-                            className="w-full"
-                        />
-                        <Button
-                            className="w-full mt-4"
-                            icon="pi pi-sign-in"
-                            label="Login"
-                            onClick={handleLogin}
-                        />
-                        {falseMessage && (
-                            <div className="mb-4 text-red-500 mt-6">
-                                {falseMessage}
+                            <div className="text-lg font-medium mb-4">Login</div>
+                            <InputText
+                                id="login_username"
+                                value={login_username}
+                                onChange={(e) => setLoginUsername(e.target.value)}
+                                placeholder="Username"
+                                className="w-full"
+                            />
+                            <InputText
+                                id="login_password"
+                                value={login_password}
+                                onChange={(e) => setLoginPassword(e.target.value)}
+                                placeholder="Password"
+                                type="password"
+                                className="w-full"
+                            />
+                            <Button
+                                className="w-full mt-4"
+                                icon="pi pi-sign-in"
+                                label="Login"
+                                onClick={handleLogin}
+                            />
+
+                            {falseMessage && (
+                                <div className="mb-4 text-red-500 mt-6">
+                                    {falseMessage}
+                                </div>
+                            )}
+                            {loggedOutMessage && (
+                                <div className="mb-4 text-green-500 mt-6">
+                                    {loggedOutMessage}
+                                </div>
+                            )}
+
+                            <div className='mt-7'>
+                                {forgotPasswordClicked &&
+                                    <div>
+                                        <InputText
+                                            id="forgot_mail"
+                                            value={forgot_mail}
+                                            onChange={(e) => setForgotMail(e.target.value)}
+                                            placeholder="Email"
+                                            className="w-full"
+                                        /> 
+                                    </div>
+
+                                }
+                                <Button 
+                                    className='w-6 mt-4'
+                                    label={forgotButtonLabel}
+                                    onClick={handleForgotPassword}
+                                />
+                                {forgotMessage && (
+                                    <div className="mb-4 text-blue-500 mt-6">
+                                        {forgotMessage}
+                                    </div>
+                                )}
+                                
                             </div>
-                        )}
-                        {loggedOutMessage && (
-                            <div className="mb-4 text-green-500 mt-6">
-                                {loggedOutMessage}
-                            </div>
-                        )}
                         </div>
                     </div>
         

@@ -1,11 +1,3 @@
-censorred_words = [
-    "gay", 
-    "öğlen birası", 
-    "napıcaz o işleri", 
-    "benim iştahım kaçtı",
-    "bu dönem her dersten ba alıcam"
-]
-
 # longest prefix suffix
 def compute_lps_array(pat, M, lps):
     len = 0
@@ -56,11 +48,3 @@ def kmp_search(pat, txt):
                 i += 1
     
     return result_txt
-
-def censorship(text):      
-    result = text
-    for censorred_word in censorred_words:
-        print(censorred_word)
-        result = kmp_search(censorred_word, result)
-    
-    return result

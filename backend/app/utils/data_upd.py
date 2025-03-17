@@ -1,6 +1,6 @@
 from app.utils.db_utils import *
 from flask import jsonify
-from app.utils.censorship import censorship
+from app.utils.censorship.censorship import censorship_text
 
 
 def upd_post_likeCount(post_id, user_id):
@@ -234,7 +234,7 @@ def upd_user(user):
             profile_photo = %s,
             university_id = %s
         WHERE id = %s
-    """, (censorship(user_name), user_mail, image, university_id, user_id))
+    """, (censorship_text(user_name), user_mail, image, university_id, user_id))
       
     conn.commit()
     cursor.close()

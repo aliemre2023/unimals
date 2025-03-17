@@ -6,7 +6,7 @@ from app.utils.data_get import *
 from app.utils.data_upd import *
 from app.utils.data_del import *
 from app.utils.data_add import *
-from app.utils.censorship import censorship
+from app.utils.censorship.censorship import censorship_text
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -106,7 +106,7 @@ def signup():
     if not username or not email or not password:
         return jsonify({"error": "Missing required fields"}), 400
 
-    if(censorship(username) != username):
+    if(censorship_text(username) != username):
         return jsonify({"error": "!!👮👮👮👮No sir👮👮👮👮!!"}), 400
 
     conn = create_connection()
@@ -209,7 +209,7 @@ def login():
         '''
 
         # Add CORS headers explicitly
-        response.headers.add('Access-Control-Allow-Origin', 'https://unimals.vercel.app') 
+        response.headers.add('Access-Control-Allow-Origin', 'https://unimals.vercel.app')  ####
         response.headers.add('Access-Control-Allow-Credentials', 'true')
 
         return response
@@ -315,3 +315,9 @@ def api_add_commentAnimal(animal_id):
     comment = request.get_json()
     added_comment = add_newCommentAnimal(comment, animal_id)
     return added_comment
+
+@api_bp.route("/forgotmypassword", methods=['POST'])
+def api_forgotmypassword():
+    email = request.get_json()['email']
+    result = forgotmypassword_mail(email)
+    return result

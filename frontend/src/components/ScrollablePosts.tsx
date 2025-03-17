@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from 'primereact/button';
 import ProfilePhoto from './ProfilePhoto';
 import PostVisualize from "../components/PostVisualize";
 import { useRouter } from 'next/router';
 import { Sidebar } from "primereact/sidebar";
 import useDecode from '../hooks/useDecode';
+import { ProgressSpinner } from 'primereact/progressspinner';       
 
 interface UserReaction {
     post_id: number | string;
@@ -13,9 +14,10 @@ interface UserReaction {
 
 interface ScrollablePostsListProps {
     width: string;
+    onScroll: (scrollTop: number, scrollHeight: number, clientHeight: number) => void;
 }
 
-const ScrollablePostsList: React.FC<ScrollablePostsListProps> = ({width}) => {
+const ScrollablePostsList: React.FC<ScrollablePostsListProps> = ({width, onScroll}) => {
     const [latestPosts, setLatestPosts] = useState<Post[]>([]);
     const [isLoadingLike, setIsLoadingLike] = useState<boolean>(false);
     const [isPostVisible, setIsPostVisible] = useState(false);
@@ -24,9 +26,10 @@ const ScrollablePostsList: React.FC<ScrollablePostsListProps> = ({width}) => {
     const [userReactions, setUserReactions] = useState<UserReaction[]>([]);
     const [postAnimalsSidebar, setPostAnimalsSidebar] = useState<{ [key: number]: boolean }>({});
     const {storedUserId, isLoading} = useDecode();
+    const scrollableDivRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        fetch(`http://127.0.0.1:5000/api/post/latest`)
+        fetch(`https://unimals-backend.vercel.app/api/post/latest`)
             .then((response) => {
                 const data = response.json();
                 return data;
@@ -37,12 +40,33 @@ const ScrollablePostsList: React.FC<ScrollablePostsListProps> = ({width}) => {
         handleUserReactions();
     }, [storedUserId]);
 
+    useEffect(() => {
+        const handleScroll = () => {
+            const scrollableDiv = scrollableDivRef.current;
+            if (scrollableDiv) {
+                const { scrollTop, scrollHeight, clientHeight } = scrollableDiv;
+                onScroll(scrollTop, scrollHeight, clientHeight);
+            }
+        };
+
+        const scrollableDiv = scrollableDivRef.current;
+        if (scrollableDiv) {
+            scrollableDiv.addEventListener('scroll', handleScroll);
+        }
+
+        return () => {
+            if (scrollableDiv) {
+                scrollableDiv.removeEventListener('scroll', handleScroll);
+            }
+        };
+    }, [onScroll]);
+
     const handleUserReactions = async () => {
         if (!storedUserId) {
             return;
         }
 
-        const response = await fetch(`http://127.0.0.1:5000/api/users/posts/like?user_id=${storedUserId}`, {
+        const response = await fetch(`https://unimals-backend.vercel.app/api/users/posts/like?user_id=${storedUserId}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
@@ -63,7 +87,7 @@ const ScrollablePostsList: React.FC<ScrollablePostsListProps> = ({width}) => {
         }
         setIsLoadingLike(true);
         try {
-            const response = await fetch(`http://127.0.0.1:5000/api/posts/${postId}/like`, {
+            const response = await fetch(`https://unimals-backend.vercel.app/api/posts/${postId}/like`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -102,7 +126,7 @@ const ScrollablePostsList: React.FC<ScrollablePostsListProps> = ({width}) => {
         }
         setIsLoadingLike(true);
         try {
-            const response = await fetch(`http://127.0.0.1:5000/api/posts/${postId}/dislike`, {
+            const response = await fetch(`https://unimals-backend.vercel.app/api/posts/${postId}/dislike`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -156,12 +180,25 @@ const ScrollablePostsList: React.FC<ScrollablePostsListProps> = ({width}) => {
         }));
     };
 
+    const isScrolledToBottom = () => {
+        if (!scrollableDivRef.current) return false;
+        const { scrollTop, scrollHeight, clientHeight } = scrollableDivRef.current;
+        return scrollTop + clientHeight >= scrollHeight;
+    };
+
 
     return (
-        <div className={`${width} bg-gray-400 scrollable justify-content-center`}>
+        <div ref={scrollableDivRef} className={`${width} bg-gray-400 scrollable justify-content-center`}>
             {
                 <ul className='m-4'>
-                    {latestPosts.map((post) => (
+                    { latestPosts.length == 0 ?
+                    <li className='p-3 m-3'>
+                        <ProgressSpinner style={{width: '100px', height: '100px'}} strokeWidth="2" fill="#cbd5e0" animationDuration="1.1s" />
+                    </li>
+                    
+
+                    :
+                    latestPosts.map((post) => (
                         <li key={post.id}
                             className={`${postAnimalsSidebar[post.id as number] ? 'border-red-100' : 'border-primary-500'} border-solid border-2 surface-overlay p-6 m-3 pb-1 pt-1 border-round-md relative`}
                         >                      
@@ -248,24 +285,6 @@ const ScrollablePostsList: React.FC<ScrollablePostsListProps> = ({width}) => {
                         <p>END OF PAGE</p>
                         <br></br>
                         <p>take a break</p>
-                        <br></br>
-                        <br></br>
-                        <br></br>
-                        <p>
-                        ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠤⠒⠈⠉⠉⠉⠉⠒⠀⠀⠤⣀⠀⠀⠀⠀⠀⠀⠀<br></br>
-                        ⠀⠀⠀⠀⠀⠀⠀⠀⠀⣰⠁⠀⠀⠀⠀⠀⠀⢀⣄⠀⠀⠀⠀⠑⡄⠀⠀⠀⠀⠀<br></br>
-                        ⠀⠀⠀⠀⠀⠀⠀⠀⠰⠿⠿⠿⠣⣶⣿⡏⣶⣿⣿⠷⠶⠆⠀⠀⠘⠀⠀⠀⠀⠀<br></br>
-                        ⠀⠀⠀⠀⠀⠀⠠⠴⡅⠀⠀⠠⢶⣿⣿⣷⡄⣀⡀⡀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀<br></br>
-                        ⠀⣰⡶⣦⠀⠀⠀⡰⠀⠀⠸⠟⢸⣿⣿⣷⡆⠢⣉⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀<br></br>
-                        ⠀⢹⣧⣿⣇⠀⠀⡇⠀⢠⣷⣲⣺⣿⣿⣇⠤⣤⣿⣿⠀⢸⠀⣤⣶⠦⠀⠀⠀⠀<br></br>
-                        ⠀⠀⠙⢿⣿⣦⡀⢇⠀⠸⣿⣿⣿⣿⣿⣿⣿⣿⣿⠇⠀⡜⣾⣿⡃⠇⢀⣤⡀⠀<br></br>
-                        ⠀⠀⠀⠀⠙⢿⣿⣮⡆⠀⠙⠿⣿⣿⣾⣿⡿⡿⠋⢀⠞⢀⣿⣿⣿⣿⣿⡟⠁⠀<br></br>
-                        ⠀⠀⠀⠀⠀⠀⠛⢿⠇⣶⣤⣄⢀⣰⣷⣶⣿⠁⡰⢃⣴⣿⡿⢋⠏⠉⠁⠀⠀⠀<br></br>
-                        ⠀⠀⠀⠀⠀⠀⠀⠠⢾⣿⣿⣿⣞⠿⣿⣿⢿⢸⣷⣌⠛⠋⠀⠘⠀⠀⠀⠀⠀⠀<br></br>
-                        ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠙⣿⣿⣿⣶⣶⣿⣯⣿⣿⣿⣆⠀⠇⠀⠀⠀⠀⠀⠀<br></br>
-                        ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣿⣿⣿⣿⣿⣯⡙⢿⣿⣿⠟⡁⠰⡀⠀⠀⠀⠀⠀<br></br>
-                        ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⣿⣿⣿⣿⣿⣿⡟⠈⢩⣥⣾⣷⠐⡌⠙⠃⠀  <br></br>
-                        </p>
 
                     </li>
                 </ul>
