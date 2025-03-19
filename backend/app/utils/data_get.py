@@ -712,3 +712,60 @@ def get_user_animals_like(user_id):
     
     return jsonify(user_animals_like)
 
+def get_follower_table(user_id):
+    conn = create_connection()
+    cursor = conn.cursor()
+
+    query = """
+    SELECT
+        follower_table.follows AS followings,
+        users.name,
+        users.profile_photo
+    FROM follower_table
+    LEFT JOIN users ON users.id = follower_table.follows
+    WHERE user_id = %s;
+    """
+
+    cursor.execute(query, (user_id,))
+    followings = cursor.fetchall()
+
+    query = """
+    SELECT
+        follower_table.user_id AS followers,
+        users.name,
+        users.profile_photo
+    FROM follower_table
+    LEFT JOIN users ON users.id = follower_table.user_id
+    WHERE follows = %s;
+    """
+
+    cursor.execute(query, (user_id,))
+    followers = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    
+    follow_info = []
+
+    user_followers = []
+    for follower in followers:
+        user_info_ = {
+            'id': follower[0],
+            'name': follower[1],
+            'profile_photo': follower[2]
+        }
+        user_followers.append(user_info_)
+    follow_info.append(user_followers)
+
+    user_followings = []
+    for following in followings:
+        user_info_ = {
+            'id': following[0],
+            'name': following[1],
+            'profile_photo': following[2]
+        }
+        user_followings.append(user_info_)
+    follow_info.append(user_followings)
+
+    return jsonify(follow_info)

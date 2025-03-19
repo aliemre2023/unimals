@@ -180,13 +180,6 @@ const ScrollablePostsList: React.FC<ScrollablePostsListProps> = ({width, onScrol
         }));
     };
 
-    const isScrolledToBottom = () => {
-        if (!scrollableDivRef.current) return false;
-        const { scrollTop, scrollHeight, clientHeight } = scrollableDivRef.current;
-        return scrollTop + clientHeight >= scrollHeight;
-    };
-
-
     return (
         <div ref={scrollableDivRef} className={`${width} bg-gray-400 scrollable justify-content-center`}>
             {

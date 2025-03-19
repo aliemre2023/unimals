@@ -7,6 +7,7 @@ from app.utils.data_upd import *
 from app.utils.data_del import *
 from app.utils.data_add import *
 from app.utils.censorship.censorship import censorship_text
+from app.utils.data_send import *
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -320,4 +321,10 @@ def api_add_commentAnimal(animal_id):
 def api_forgotmypassword():
     email = request.get_json()['email']
     result = forgotmypassword_mail(email)
+    return result
+
+
+@api_bp.route("/users/<int:user_id>/follow_table", methods=['GET'])
+def api_userFollowerTable(user_id):
+    result = get_follower_table(user_id)
     return result

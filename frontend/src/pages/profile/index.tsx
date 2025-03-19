@@ -9,6 +9,7 @@ import Cookies from 'js-cookie'
 import { jwtDecode } from "jwt-decode";
 import useDecode from '../../hooks/useDecode';
 import GridAnimals from '../../components/GridAnimals';
+import FollowSide from '../../components/FollowSide';
 
 const Profile = () => {
     const [userInfo, setUserInfo] = useState<any[]>([]);
@@ -182,6 +183,14 @@ const Profile = () => {
         
     }
 
+    const [isFollowSideVisible, setIsFollowSideVisible] = useState<boolean>(false);
+    const handleFollowSideClose = () => {
+        setIsFollowSideVisible(false);
+    }
+    const handleFollowSideOpen = () => {
+        setIsFollowSideVisible(true);
+    }
+
     if (!userId) {
         return (
             <div className="w-full max-w-6xl mx-auto">
@@ -352,11 +361,17 @@ const Profile = () => {
                                 <div>Post</div>
                                 <div>{userInfo.length > 0 && userInfo[0].user_post_count}</div>
                             </div>
-                            <div>
+                            <div
+                                className='cursor-pointer'
+                                onClick={handleFollowSideOpen}
+                            >
                                 <div>Takipçi</div>
                                 <div>{userInfo.length > 0 && userInfo[0].user_follower_count}</div>
                             </div>
-                            <div>
+                            <div
+                                className='cursor-pointer'
+                                onClick={handleFollowSideOpen}
+                            >
                                 <div>Takip</div>
                                 <div>{userInfo.length > 0 && userInfo[0].user_following_count}</div>
                             </div>
@@ -385,6 +400,7 @@ const Profile = () => {
                     <GridAnimals user_id={userId} edit={editting} travelling={false}/>
                 }
             </div>
+            <FollowSide user_id={userId} visible={isFollowSideVisible} onClose={handleFollowSideClose} />
             <FooterNav />
         </div>
     )
