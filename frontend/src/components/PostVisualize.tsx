@@ -23,7 +23,7 @@ const PostVisualize: React.FC<PostVisualizeProps> = ({ post_id, visible: initial
     const router = useRouter();
 
     const fetchComments = async (post_id: string) => {
-        const response = await fetch(`http://127.0.0.1:5000/api/posts/${post_id}/comments`);
+        const response = await fetch(`https://unimals-backend.vercel.app/api/posts/${post_id}/comments`);
         const data = await response.json();
         setComments(data);
     };
@@ -41,7 +41,7 @@ const PostVisualize: React.FC<PostVisualizeProps> = ({ post_id, visible: initial
             user_id: storedUserId,
             comment: newComment,
         };
-        const response = await fetch(`http://127.0.0.1:5000/api/posts/${post_id}/comments/add`, {
+        const response = await fetch(`https://unimals-backend.vercel.app/api/posts/${post_id}/comments/add`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

@@ -57,7 +57,7 @@ const AnimalAdd: React.FC = () => {
     };
     
     const fetchUniversities = async (name: string) => {
-        const response = await fetch(`http://127.0.0.1:5000/api/universities?name=${name}`);
+        const response = await fetch(`https://unimals-backend.vercel.app/api/universities?name=${name}`);
         const data = await response.json();
         setUniversities(data);
     };
@@ -153,7 +153,7 @@ const AnimalAdd: React.FC = () => {
             university_id: selectedUniversityId
         };
 
-        const response = await fetch('http://127.0.0.1:5000/api/animals/add', {
+        const response = await fetch('https://unimals-backend.vercel.app/api/animals/add', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

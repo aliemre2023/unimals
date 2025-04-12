@@ -57,7 +57,7 @@ const RoomAdd: React.FC = () => {
     };
 
     const fetchUsers = async (name: string) => {
-        const response = await fetch(`http://127.0.0.1:5000/api/profiles?name=${name}`)
+        const response = await fetch(`https://unimals-backend.vercel.app/api/profiles?name=${name}`)
         if(response.ok){
             const data = await response.json();
             setUsers(data);
@@ -178,7 +178,7 @@ const RoomAdd: React.FC = () => {
             participants: selectedUsersIds
         };
 
-        const response = await fetch('http://127.0.0.1:5000/api/rooms/add', {
+        const response = await fetch('https://unimals-backend.vercel.app/api/rooms/add', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

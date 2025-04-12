@@ -106,6 +106,15 @@ CREATE TABLE IF NOT EXISTS post_likes (
     PRIMARY KEY (post_id, user_id)
 );
 
+CREATE TABLE IF NOT EXISTS animal_points (
+    animal_id INT  REFERENCES animals(id) ON DELETE CASCADE,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    longitude DOUBLE,
+    latitude DOUBLE,
+    timestamp TIMESTAMP,
+    PRIMARY KEY (animal_id, user_id, timestamp)
+);
+
 INSERT INTO universities (name, abbreviation, photo)
 VALUES ('Abdullah Gül Üniversitesi', 'agu', 'https://toptalent.co/Uploads/CKImages/abdullah%20g%C3%BCl%20%C3%BCniversitesi%20logo.jpg'),
 ('Adana Alparslan Türkeş Bilim ve Teknoloji  Üniversitesi', 'atu', 'https://toptalent.co/Uploads/CKImages/adana.png'),

@@ -82,7 +82,7 @@ const RoomPage = () => {
     };
 
     const fetchPublicRooms = async () => {
-        const response = await fetch(`http://127.0.0.1:5000/api/rooms/public?room_name=${searchTerm}`);
+        const response = await fetch(`https://unimals-backend.vercel.app/api/rooms/public?room_name=${searchTerm}`);
         if(response.ok){
             const data = await response.json();
             setPublicRooms(data);
@@ -93,7 +93,7 @@ const RoomPage = () => {
     };
 
     const fetchSecretRooms = async (userId: string) => {
-        const response = await fetch(`http://127.0.0.1:5000/api/users/${userId}/rooms?room_name=${searchTerm}`);
+        const response = await fetch(`https://unimals-backend.vercel.app/api/users/${userId}/rooms?room_name=${searchTerm}`);
         if(response.ok){
             const data = await response.json(); 
             setSecretRooms(data);
@@ -105,7 +105,7 @@ const RoomPage = () => {
 
     const fetchRoomInfo = async (roomId: string) => {
         try {
-            const response = await fetch(`http://127.0.0.1:5000/api/rooms/${roomId}`);
+            const response = await fetch(`https://unimals-backend.vercel.app/api/rooms/${roomId}`);
             if (response.ok) {
                 const data = await response.json();
                 setRoomInfo(data);
@@ -123,7 +123,7 @@ const RoomPage = () => {
         if (!newMessage.trim() || !activeRoom?.id) return;
 
         try {
-            const response = await fetch(`http://127.0.0.1:5000/api/rooms/${activeRoom?.id}/message/send`, {
+            const response = await fetch(`https://unimals-backend.vercel.app/api/rooms/${activeRoom?.id}/message/send`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

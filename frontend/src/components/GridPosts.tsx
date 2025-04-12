@@ -18,7 +18,7 @@ const GridPosts: React.FC<GridPostProps> = ({user_id, edit, travelling}) => {
 
     const fetchUserPosts = async (user_id: string) => {
         try {
-            const response = await fetch(`http://127.0.0.1:5000/api/users/${user_id}/posts`);
+            const response = await fetch(`https://unimals-backend.vercel.app/api/users/${user_id}/posts`);
             if (response.ok) {
                 const data = await response.json();
                 setUserPosts(data);
@@ -31,7 +31,7 @@ const GridPosts: React.FC<GridPostProps> = ({user_id, edit, travelling}) => {
     };
 
     const handleDeletePost = async (post_id: string, user_id: string) => {
-        const response = await fetch(`http://127.0.0.1:5000/api/posts/${post_id}`, {
+        const response = await fetch(`https://unimals-backend.vercel.app/api/posts/${post_id}`, {
             method: 'DELETE',
         });
         if (response.ok) {

@@ -323,8 +323,21 @@ def api_forgotmypassword():
     result = forgotmypassword_mail(email)
     return result
 
-
 @api_bp.route("/users/<int:user_id>/follow_table", methods=['GET'])
 def api_userFollowerTable(user_id):
     result = get_follower_table(user_id)
+    return result
+
+@api_bp.route("/animals/<int:animal_id>/add/point", methods=['POST'])
+def api_addAnimalPoint(animal_id):
+    user_id = request.get_json()['user_id']
+    longitude = request.get_json()['longitude']
+    latitude = request.get_json()['latitude']
+    result = add_animalPoint(animal_id, user_id, latitude, longitude)
+    return result
+
+@api_bp.route("/animals/<int:animal_id>/get/point10", methods=['GET'])
+def api_getAnimalPoint10(animal_id):
+
+    result = get_last10AnimalPoint(animal_id)
     return result

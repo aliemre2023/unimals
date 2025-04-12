@@ -12,7 +12,7 @@ const AnimalsList: React.FC<AnimalsListProps> = ({title, is_best}) => {
     const router = useRouter();
 
     useEffect(() => {
-        fetch(`http://127.0.0.1:5000/api/animals?is_goody=${true}`)
+        fetch(`https://unimals-backend.vercel.app/api/animals?is_goody=${true}`)
             .then((response) => {
                 const data = response.json();
                 return data;

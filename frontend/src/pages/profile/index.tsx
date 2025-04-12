@@ -326,32 +326,6 @@ const Profile = () => {
                         id={userId as string}
                         
                     />
-                    <div className="absolute top-0 left-0 p-4 md:p-0 sm:p-0">
-                        <Button
-                            className="p-button-danger m-1"
-                            icon="pi pi-sign-out"
-                            label=""
-                            onClick={handleLogout}
-                        />
-
-                        <Button
-                            className="bg-blue-900 m-1"
-                            icon="pi pi-pencil"
-                            label=""
-                            onClick={handleEditting}
-                        />
-                        {editting && (
-                        <div>
-                            <Button
-                                icon="pi pi-user-edit"
-                                className=" bg-red-800 m-1"
-                                onClick={() => {
-                                    router.push("/profile/edit")
-                                }}
-                            />
-                        </div>   
-                        )}
-                    </div>
                     <div className='w-11 pl-3 text-center justify-content-center align-items-center'>
                         <div className='p-4 text-4xl'>
                         {userInfo.length > 0 && userInfo[0].user_name}
@@ -362,14 +336,14 @@ const Profile = () => {
                                 <div>{userInfo.length > 0 && userInfo[0].user_post_count}</div>
                             </div>
                             <div
-                                className='cursor-pointer'
+                                className='cursor-pointer border-bottom-2 border-top-2 border-white p-1 border-round-md hover:border-blue-500'
                                 onClick={handleFollowSideOpen}
                             >
                                 <div>Takipçi</div>
                                 <div>{userInfo.length > 0 && userInfo[0].user_follower_count}</div>
                             </div>
                             <div
-                                className='cursor-pointer'
+                                className='cursor-pointer border-bottom-2 border-top-2 border-white p-1 border-round-md hover:border-blue-500'
                                 onClick={handleFollowSideOpen}
                             >
                                 <div>Takip</div>
@@ -380,19 +354,42 @@ const Profile = () => {
                 </div>
                 <div className='w-12 flex'>
                     <Button
-                        className="pi pi-image w-6 bg-blue-600 border-0 border-blue-100"
+                        className="w-4 p-button-danger m-1"
+                        icon="pi pi-sign-out"
+                        label=""
+                        onClick={handleLogout}
+                    />
+
+                    <Button
+                        className="w-4 bg-blue-900 m-1"
+                        icon="pi pi-pencil"
+                        label=""
+                        onClick={handleEditting}
+                    />
+                    <Button
+                        icon="pi pi-user-edit"
+                        className="w-4 bg-red-800 m-1"
+                        onClick={() => {
+                            router.push("/profile/edit")
+                        }}
+                    />
+                </div>
+
+                <div className='w-12 flex'>
+                    <Button
+                        className="pi pi-image w-6 bg-blue-600 border-0 m-1"
                         onClick={handleGridPost}
                     >
                     </Button>
-                    <button
-                        className="w-6 bg-blue-600 border-0 border-blue-100"
+                    <Button
+                        className="w-6 bg-blue-600 border-0 m-1 justify-content-center"
                         onClick={handleGridAnimal}
                     >
                         <img
                             src='/icon_dog_white.png'
                             width='20px'
                         />
-                    </button>
+                    </Button>
                 </div>
                 {grid == 'post' ?
                     <GridPosts user_id={userId} edit={editting} travelling={false}/>

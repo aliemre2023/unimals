@@ -9,6 +9,10 @@ import { integer } from 'aws-sdk/clients/cloudfront';
 import useDecode from '../../../hooks/useDecode';
 import { InputTextarea } from 'primereact/inputtextarea';
 
+//import MyMapComponent from '../../../components/WorldMap';
+import dynamic from 'next/dynamic';
+const MyMapComponent = dynamic(() => import('../../../components/WorldMap'), { ssr: false });
+
 const AnimalInfo = () => {
     const router = useRouter();
     const { id } = router.query;
@@ -25,7 +29,7 @@ const AnimalInfo = () => {
     }, [id, storedUserId]);
 
     const getAnimalInfo = async (id: string) => {
-        const response = await fetch(`http://127.0.0.1:5000/api/animals?id=${id}`);
+        const response = await fetch(`https://unimals-backend.vercel.app/api/animals?id=${id}`);
         if (response.ok) {
             const data = await response.json();
             setAnimalInfo(data);
@@ -40,7 +44,7 @@ const AnimalInfo = () => {
             return;
         }
 
-        const response = await fetch(`http://127.0.0.1:5000/api/users/animals/like?user_id=${storedUserId}`, {
+        const response = await fetch(`https://unimals-backend.vercel.app/api/users/animals/like?user_id=${storedUserId}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
@@ -59,7 +63,7 @@ const AnimalInfo = () => {
             return;
         }
         try {
-            const response = await fetch(`http://127.0.0.1:5000/api/animals/${animalId}/like`, {
+            const response = await fetch(`https://unimals-backend.vercel.app/api/animals/${animalId}/like`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -94,7 +98,7 @@ const AnimalInfo = () => {
             return;
         }
         try {
-            const response = await fetch(`http://127.0.0.1:5000/api/animals/${animalId}/dislike`, {
+            const response = await fetch(`https://unimals-backend.vercel.app/api/animals/${animalId}/dislike`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -136,7 +140,10 @@ const AnimalInfo = () => {
         setGrid('post');  
     };
     const handleGridComment = () => {
-        setGrid('animal');
+        setGrid('comment');
+    };
+    const handleGridMap = () => {
+        setGrid('map');
     };
 
     const addNewComment = async () => {
@@ -152,7 +159,7 @@ const AnimalInfo = () => {
             user_id: storedUserId,
             comment: newComment,
         };
-        const response = await fetch(`http://127.0.0.1:5000/api/animals/${id}/comments/add`, {
+        const response = await fetch(`https://unimals-backend.vercel.app/api/animals/${id}/comments/add`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -214,14 +221,23 @@ const AnimalInfo = () => {
                 </div>
                 <div className='w-12 flex'>
                     <Button
-                        className="pi pi-image w-6 bg-blue-600 border-0 border-blue-100"
+                        className="pi pi-image w-6 m-1 bg-blue-600 border-0 border-blue-100"
                         onClick={handleGridPost}
                     >
                     </Button>
                     <Button
-                        className="pi pi-comment w-6 bg-blue-600 border-0 border-blue-100"
+                        className="pi pi-comment w-6 m-1 bg-blue-600 border-0 border-blue-100"
                         onClick={handleGridComment}
                     >
+                    </Button>
+                    <Button
+                        className="w-6 m-1 bg-blue-600 border-0 border-blue-100 justify-content-center"
+                        onClick={handleGridMap}
+                    >
+                        <img 
+                            src="/map_pointer_white.png"
+                            width='20px'
+                        />
                     </Button>
                 </div>
 
@@ -250,7 +266,7 @@ const AnimalInfo = () => {
                         </div>
                     ))}
                 </div>
-                :
+                : grid == 'comment' ? 
                 <div>  
                     <div className='w-12 flex'>  
                         <div className='w-2'></div>
@@ -287,6 +303,10 @@ const AnimalInfo = () => {
                             ))}
                         </div>
                     </div>
+                </div>
+                :
+                <div>
+                    <MyMapComponent animalImgUrl={animal.profile_photo}/>
                 </div>
                 }
             </div>

@@ -42,7 +42,7 @@ const ProfileId: React.FC = () => {
 
     const fetchUserInfo = async (userId: string) => {
         try {
-            const response = await fetch(`http://127.0.0.1:5000/api/users/${userId}`);
+            const response = await fetch(`https://unimals-backend.vercel.app/api/users/${userId}`);
             if (response.ok) {
                 const data = await response.json();
                 setUserInfo(data);
@@ -63,7 +63,7 @@ const ProfileId: React.FC = () => {
 
     const handleFollow = async (currentUserId: string, userId: string) => {
         try {
-            const response = await fetch(`http://127.0.0.1:5000/api/users/follow/add`, {
+            const response = await fetch(`https://unimals-backend.vercel.app/api/users/follow/add`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -83,7 +83,7 @@ const ProfileId: React.FC = () => {
 
     const handleUnfollow = async (currentUserId: string, userId: string) => {
         try {
-            const response = await fetch(`http://127.0.0.1:5000/api/users/follow/delete`, {
+            const response = await fetch(`https://unimals-backend.vercel.app/api/users/follow/delete`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'
@@ -154,15 +154,15 @@ const ProfileId: React.FC = () => {
                         onClick={handleGridPost}
                     >
                     </Button>
-                    <button
-                        className="w-6 bg-blue-600 border-0 border-blue-100"
+                    <Button
+                        className="w-6 bg-blue-600 border-0 border-blue-100 justify-content-center"
                         onClick={handleGridAnimal}
                     >
                         <img
                             src='/icon_dog_white.png'
                             width='20px'
                         />
-                    </button>
+                    </Button>
                 </div>
                 {grid == 'post' ?
                     <GridPosts user_id={id as string} edit={false} travelling={true}/>

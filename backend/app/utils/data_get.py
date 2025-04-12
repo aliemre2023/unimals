@@ -769,3 +769,34 @@ def get_follower_table(user_id):
     follow_info.append(user_followings)
 
     return jsonify(follow_info)
+
+def get_last10AnimalPoint(animal_id):
+    conn = create_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    SELECT
+        latitude,
+        longitude,
+        timestamp
+    FROM animal_points
+    WHERE animal_id = %s
+    ORDER BY timestamp DESC
+    LIMIT 10;
+    """, (animal_id,))
+
+    points = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    formatted_points = []
+    for point in points:
+        formatted_points.append({
+            'latitude': point[0],
+            'longitude': point[1],
+            'timestamp': point[2].isoformat() if point[2] else None  # Format timestamp as ISO string
+        })
+
+    return jsonify(formatted_points)
+    

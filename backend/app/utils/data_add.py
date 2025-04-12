@@ -154,3 +154,22 @@ def add_newRoom(room):
 
     return jsonify({'status': 200,
                     'room_id': room_id})
+
+def add_animalPoint(animal_id, user_id, latitude, longitude):
+    conn = create_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    INSERT INTO animal_points (animal_id, user_id, longitude, latitude) 
+    VALUES (%s,  %s, %s, %s);
+    """, (animal_id, user_id, longitude, latitude))
+
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+
+    return jsonify({
+        'status': 200,
+        'message': "Point added"
+    })

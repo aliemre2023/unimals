@@ -71,7 +71,7 @@ const AnimalAdd: React.FC = () => {
         if (!userId) return;
 
         try {
-            const response = await fetch(`http://127.0.0.1:5000/api/users/${userId}`);
+            const response = await fetch(`https://unimals-backend.vercel.app/api/users/${userId}`);
             if (response.ok) {
                 const data = await response.json();
                 setUserInfo(data);  
@@ -105,7 +105,7 @@ const AnimalAdd: React.FC = () => {
     };
     
     const fetchUniversities = async (name: string) => {
-        const response = await fetch(`http://127.0.0.1:5000/api/universities?name=${name}`);
+        const response = await fetch(`https://unimals-backend.vercel.app/api/universities?name=${name}`);
         const data = await response.json();
         setUniversities(data);
     };
@@ -201,7 +201,7 @@ const AnimalAdd: React.FC = () => {
             university_id: selectedUniversityId ? selectedUniversityId : userInfo.user_university_id
         };
 
-        const response = await fetch('http://127.0.0.1:5000/api/users/update', {
+        const response = await fetch('https://unimals-backend.vercel.app/api/users/update', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

@@ -18,7 +18,7 @@ const GridPosts: React.FC<GridPostProps> = ({user_id, edit, travelling}) => {
 
     const fetchUserAnimals = async (user_id: string) => {
         try {
-            const response = await fetch(`http://127.0.0.1:5000/api/animals?user_id=${user_id}`);
+            const response = await fetch(`https://unimals-backend.vercel.app/api/animals?user_id=${user_id}`);
             if (response.ok) {
                 const data = await response.json();
                 setUserAnimals(data);
@@ -32,7 +32,7 @@ const GridPosts: React.FC<GridPostProps> = ({user_id, edit, travelling}) => {
 
     
     const handleDeleteAnimal = async (post_id: string, user_id: string) => {
-        const response = await fetch(`http://127.0.0.1:5000/api/animals/${post_id}/delete`, {
+        const response = await fetch(`https://unimals-backend.vercel.app/api/animals/${post_id}/delete`, {
             method: 'DELETE',
         });
         if (response.ok) {

@@ -29,7 +29,7 @@ const Profiles = () => {
     };
 
     useEffect(() => {
-        fetch(`http://127.0.0.1:5000/api/profiles?name=${searchText}`)
+        fetch(`https://unimals-backend.vercel.app/api/profiles?name=${searchText}`)
             .then((response) => response.json())
             .then((data) => {
                 setUsers(data);

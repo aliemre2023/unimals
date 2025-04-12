@@ -35,7 +35,7 @@ const UniversityInfo = () => {
     };
 
     useEffect(() => {
-        fetch(`http://127.0.0.1:5000/api/animals?university_id=${id}&name=${searchTextAnimal}`)
+        fetch(`https://unimals-backend.vercel.app/api/animals?university_id=${id}&name=${searchTextAnimal}`)
             .then((response) => response.json())
             .then((data) => {
                 setAnimals(data);
@@ -63,7 +63,7 @@ const UniversityInfo = () => {
     };
 
     useEffect(() => {
-        fetch(`http://127.0.0.1:5000/api/profiles?university_id=${id}&name=${searchTextUser}`)
+        fetch(`https://unimals-backend.vercel.app/api/profiles?university_id=${id}&name=${searchTextUser}`)
             .then((response) => response.json())
             .then((data) => {
                 setUsers(data);
@@ -123,7 +123,7 @@ const UniversityInfo = () => {
     // // //
 
     useEffect(() => {
-        fetch(`http://127.0.0.1:5000/api/universities?id=${id}`)
+        fetch(`https://unimals-backend.vercel.app/api/universities?id=${id}`)
             .then((response) => response.json())
             .then((data) => {
                 setUniversity(data);

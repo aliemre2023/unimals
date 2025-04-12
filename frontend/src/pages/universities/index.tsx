@@ -29,7 +29,7 @@ const Universities = () => {
     };
 
     useEffect(() => {
-        fetch(`http://127.0.0.1:5000/api/universities?name=${searchText}`)
+        fetch(`https://unimals-backend.vercel.app/api/universities?name=${searchText}`)
             .then((response) => response.json())
             .then((data) => {
                 setUniversities(data);
