@@ -195,13 +195,13 @@ def get_latest_posts():
 
     query = """
     SELECT
-        posts.id,
-        users.id,
-        users.name,
-        users.profile_photo,
-        posts.image,
-        posts.description,
-        posts.posted_date,
+        posts.id AS post_id,
+        users.id AS user_id,
+        users.name AS user_name,
+        users.profile_photo AS user_profile_photo,
+        posts.image AS post_image,
+        posts.description AS post_description,
+        posts.posted_date AS post_date,
         (
             SELECT COUNT(*)
             FROM post_likes
@@ -212,14 +212,19 @@ def get_latest_posts():
             FROM post_likes
             WHERE post_likes.post_id = posts.id AND post_likes.is_like = false
         ) AS dislike_count,
-        COUNT(comments_post.id) AS comment_count
-
+        COUNT(comments_post.id) AS comment_count,
+        post_animals.animal_id AS animal_id,
+        animals.name AS animal_name,
+        animals.profile_photo AS animal_profile_photo
     FROM posts
     LEFT JOIN users ON users.id = posts.user_id
     LEFT JOIN comments_post ON comments_post.post_id = posts.id
+    LEFT JOIN post_animals ON post_animals.post_id = posts.id
+    LEFT JOIN animals ON animals.id = post_animals.animal_id
     GROUP BY
         posts.id, users.id, users.name, users.profile_photo,
-        posts.image, posts.description, posts.posted_date
+        posts.image, posts.description, posts.posted_date,
+        post_animals.animal_id, animals.name, animals.profile_photo
     ORDER BY posts.posted_date DESC
     LIMIT 150;
     """
@@ -228,51 +233,31 @@ def get_latest_posts():
     cursor.close()
     conn.close()
 
-    latest_post = []
+    latest_posts = {}
     for row in rows:
-        a_post = {
-            'id': row[0],
-            'user_id': row[1],
-            'user_name': row[2],
-            'user_profilePhoto': row[3],
-            'image': row[4],
-            'description': row[5],
-            'postedDate': row[6],
-            'likeCount': row[7],
-            'dislikeCount': row[8],
-            'commentCount': row[9],
-            'postsAnimal': []
-        }
-
-        conn = create_connection()
-        cursor = conn.cursor()
-
-        cursor.execute("""
-        SELECT
-            post_animals.animal_id,
-            animals.name,
-            animals.profile_photo
-        FROM post_animals
-        LEFT JOIN animals ON animals.id = post_animals.animal_id
-        WHERE post_id = %s;
-        """, (row[0], ))
-
-        post_animals = cursor.fetchall()
-        cursor.close()
-        conn.close()
-
-        for animal in post_animals:
-            animals_info = {
-                'id': animal[0],
-                'name': animal[1],
-                'profile_photo': animal[2]
+        post_id = row[0]
+        if post_id not in latest_posts:
+            latest_posts[post_id] = {
+                'id': row[0],
+                'user_id': row[1],
+                'user_name': row[2],
+                'user_profilePhoto': row[3],
+                'image': row[4],
+                'description': row[5],
+                'postedDate': row[6],
+                'likeCount': row[7],
+                'dislikeCount': row[8],
+                'commentCount': row[9],
+                'postsAnimal': []
             }
-            a_post['postsAnimal'].append(animals_info) 
+        if row[10]: 
+            latest_posts[post_id]['postsAnimal'].append({
+                'id': row[10],
+                'name': row[11],
+                'profile_photo': row[12]
+            })
 
-
-        latest_post.append(a_post)
-
-    return jsonify(latest_post)
+    return jsonify(list(latest_posts.values()))
 
 def get_user_info(user_id):
     conn = create_connection()
