@@ -212,7 +212,7 @@ const RoomAdd: React.FC = () => {
 
     return (
         <div className='w-full'>
-            <div className='w-12 flex text-4xl p-2 bg-blue-700 align-items-center justify-content-center'>
+            <div className='w-12 flex text-4xl p-1 bg-blue-700 align-items-center justify-content-center'>
                 <Button
                     className="p-button-lg p-button-success w-2 justify-content-center"
                     onClick={addRoom}

@@ -8,10 +8,12 @@ import { Button } from 'primereact/button';
 import { integer } from 'aws-sdk/clients/cloudfront';
 import useDecode from '../../../hooks/useDecode';
 import { InputTextarea } from 'primereact/inputtextarea';
+import Masonry from 'react-masonry-css';
 
 //import MyMapComponent from '../../../components/WorldMap';
 import dynamic from 'next/dynamic';
 const MyMapComponent = dynamic(() => import('../../../components/WorldMap'), { ssr: false });
+
 
 const AnimalInfo = () => {
     const router = useRouter();
@@ -241,8 +243,13 @@ const AnimalInfo = () => {
                     </Button>
                 </div>
 
+                
                 {grid == 'post' ?
-                <div className='grid-container'> 
+                <Masonry
+                breakpointCols={{ default: 4, 1024: 3, 600: 2, 450: 1 }}
+                className="my-masonry-grid"
+                columnClassName="my-masonry-grid_column"
+                >
                     {animal.posts.map((post) => (
                         <div key={post.id} className='grid-item'> 
                             <div className=''>
@@ -264,8 +271,8 @@ const AnimalInfo = () => {
                                 />
                             </div>
                         </div>
-                    ))}
-                </div>
+                    ))}   
+                </Masonry>
                 : grid == 'comment' ? 
                 <div>  
                     <div className='w-12 flex'>  

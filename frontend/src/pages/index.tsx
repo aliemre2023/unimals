@@ -32,8 +32,8 @@ const Home = () => {
 
     return (
         <div className='w-full'>
-            <div className='w-12 flex text-4xl p-3 bg-blue-700 align-items-center justify-content-center'
-                style={{ height: headerHeight }}
+            {/*style={{ height: headerHeight }}*/}
+            <div className='w-12 flex text-4xl bg-blue-700 align-items-center justify-content-center'
             >
                 🆄🅽🅸🅼🅰🅻🆂
             </div>
