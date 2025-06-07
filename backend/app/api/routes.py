@@ -1,4 +1,3 @@
-
 from flask import Blueprint, request, jsonify, session, make_response 
 import jwt
 import datetime
@@ -8,13 +7,14 @@ from app.utils.data_del import *
 from app.utils.data_add import *
 from app.utils.censorship.censorship import censorship_text
 from app.utils.data_send import *
-import os
-from dotenv import load_dotenv
-load_dotenv()
+from app.utils.aiship.post_evaluate import animal_detect_base64
+
 
 api_bp = Blueprint("api", __name__)
 
 SECRET_KEY = os.getenv("DB_SECRETKEY")
+frontend_addr = "https://unimals.vercel.app"  # http://localhost:3000 https://unimals.vercel.app
+
 
 @api_bp.route('/animals', methods=['GET'])
 def api_animals():
@@ -152,7 +152,7 @@ def login():
         response.headers.add('Access-Control-Allow-Credentials', 'true')
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
         response.headers.add('Access-Control-Allow-Methods', 'POST')
-        response.headers.add('Access-Control-Allow-Origin', 'https://unimals.vercel.app') # http://localhost:3000 https://unimals.vercel.app
+        response.headers.add('Access-Control-Allow-Origin', frontend_addr)
         return response
 
     try:
@@ -210,7 +210,7 @@ def login():
         '''
 
         # Add CORS headers explicitly
-        response.headers.add('Access-Control-Allow-Origin', 'https://unimals.vercel.app')  ####
+        response.headers.add('Access-Control-Allow-Origin', frontend_addr)  ####
         response.headers.add('Access-Control-Allow-Credentials', 'true')
 
         return response
@@ -341,3 +341,31 @@ def api_getAnimalPoint10(animal_id):
 
     result = get_last10AnimalPoint(animal_id)
     return result
+
+@api_bp.route("/posts/animal_detect", methods=['POST', 'OPTIONS'])
+def api_postAnimalDetect():
+    if request.method == 'OPTIONS':
+        response = make_response()
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+        response.headers.add('Access-Control-Allow-Methods', 'POST')
+        response.headers.add('Access-Control-Allow-Origin', frontend_addr) # http://localhost:3000 https://unimals.vercel.app
+        return response
+    
+    data = request.get_json()
+    base64_image = data['post_preview_image']
+    try:
+        # Create a BytesIO object from the base64 string
+        import base64
+        from io import BytesIO
+        
+        image_data = base64.b64decode(base64_image)
+        image_io = BytesIO(image_data)
+        
+        result = animal_detect_base64(image_io)
+        
+        animal_ids = [animal_id for animal_id in result if animal_id is not None]
+        return jsonify(animal_ids)
+    except Exception as e:
+        print(f"Error processing image: {str(e)}")
+        return jsonify({"error": str(e)}), 500

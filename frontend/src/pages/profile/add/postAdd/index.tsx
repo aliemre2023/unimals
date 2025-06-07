@@ -113,6 +113,70 @@ const PostAdd: React.FC = () => {
         }
     };
 
+    
+    useEffect(() => {
+        if (!previewUrl) return;
+
+        const sendPreviewImage = async () => {
+            try {
+            //console.log("Starting image processing");
+            // Convert blob URL to base64
+            const response = await fetch(previewUrl);
+            if (!response.ok) {
+                console.error(`Failed to fetch preview URL: ${response.status}`);
+                return;
+            }
+            
+            const blob = await response.blob();
+            //console.log(`Got blob: ${blob.type}, ${blob.size} bytes`);
+            
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                const base64String = reader.result as string;
+                //console.log(`Base64 string length: ${base64String.length}`);
+                
+                const payload = { post_preview_image: base64String.split(',')[1] };
+                //console.log(`Sending payload with ${payload.post_preview_image.length} characters`);
+                
+                // Send base64 image to backend
+                fetch('https://unimals-backend.vercel.app/api/posts/animal_detect', {
+                    method: 'POST',
+                    headers: {
+                    'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload),
+                })
+                .then(res => {
+                    //console.log(`Backend response status: ${res.status}`);
+                    if (!res.ok) {
+                    res.text().then(text => {
+                        console.error(`Server responded with status ${res.status}: ${text}`);
+                    });
+                    throw new Error(`Network response was not ok (${res.status})`);
+                    }
+                    return res.json();
+                })
+                .then(animalIds => {       
+                    setSelectedAnimalIds(animalIds);
+                    resolve(null);
+                })
+                .catch(error => {
+                    console.error('Failed to fetch animal IDs:', error);
+                    resolve(null);
+                });
+                };
+                reader.readAsDataURL(blob);
+            });
+            } catch (error) {
+            console.error('Error processing image:', error);
+            }
+        };
+
+    sendPreviewImage();
+    }, [previewUrl]);
+    
+
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
         accept: {
@@ -200,7 +264,7 @@ const PostAdd: React.FC = () => {
 
     return (
         <div className='w-full'>
-            <div className='w-12 flex text-4xl p-2 bg-blue-700 align-items-center justify-content-center'>
+            <div className='w-12 flex text-4xl p-1 bg-blue-700 align-items-center justify-content-center'>
                 <Button
                     className="p-button-lg p-button-success w-2 justify-content-center"
                     onClick={addPost}
@@ -289,19 +353,35 @@ const PostAdd: React.FC = () => {
                     </div>
                     <div className='w-full p-4  min-h-screen text-center'>
                         <div className='w-full'>
-                            <div>Animals in Post:
+                            <div>
+                                Animals in Post:
                             </div>
                             <div className='w-12 flex text-4xl align-items-center justify-content-center'>
-                            <span className="p-input-icon-left w-1/2">
-                                <InputText
-                                    value={searchTerm}
-                                    onChange={handleSearchChange}
-                                    onInput={handleInputChange}
-                                    placeholder="Search..."
-                                    className="w-full"
-                                />
-                            </span>
-                        </div>
+                                <div className='w-10'>
+                                    <span className="p-input-icon-left w-1/2">
+                                        <InputText
+                                            value={searchTerm}
+                                            onChange={handleSearchChange}
+                                            onInput={handleInputChange}
+                                            placeholder="Search..."
+                                            className="w-full"
+                                        />
+                                    </span>
+                                </div>
+                                <div className='w-2'>
+                                    <Button 
+                                        icon="pi pi-times"
+                                        className='p-button-sm p-button-rounded bg-red-500'
+                                        aria-label="Clear"
+                                        onClick={() => {
+                                            setSelectedAnimalIds([]);
+                                            setSearchTerm('');
+                                            setSearchText('');
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                            
                         </div>
                         <div className='w-full '>
                             <div className="animal-list scrollable">
