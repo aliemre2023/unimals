@@ -323,3 +323,7 @@ VALUES ('Abdullah Gül Üniversitesi', 'agu', 'https://toptalent.co/Uploads/CKIm
 ('Yaşar Üniversitesi', 'yasar', 'https://toptalent.co/Uploads/CKImages/ya%C5%9Far%20%C3%BCniversitesi.jpg'),
 ('Yeditepe Üniversitesi', 'yeditepe', 'https://toptalent.co/Uploads/CKImages/yeditepe.jpg'),
 ('Yüksek İhtisas Üniversitesi', 'yuksekihtisasuniversitesi', 'https://toptalent.co/Uploads/CKImages/y%C3%BCksek%20ihtisas%20%C3%BCni.png');
+
+ALTER TABLE animals
+ADD COLUMN embedding FLOAT8[] DEFAULT NULL,
+ADD COLUMN embedding_at TIMESTAMP NOT NULL DEFAULT NOW();
